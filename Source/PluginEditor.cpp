@@ -14,7 +14,9 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     : AudioProcessorEditor (&p), audioProcessor (p),
     rmsPeriodAttachment(p.getApvts(), "rmsPeriod", rmsPeriodSlider),
     enableSmoothingAttachment(p.getApvts(), "smoothing", enableSmoothingButton),
-    thresholdAttachment(p.getApvts(), "threshold", thresholdSlider)
+    thresholdAttachment(p.getApvts(), "threshold", thresholdSlider),
+    attackTimeAttachment(p.getApvts(), "attackTime", attackTimeSlider),
+    releaseTimeAttachment(p.getApvts(), "releaseTime", releaseTimeSlider)
 {
     addAndMakeVisible(rmsLevelHeading1);
     addAndMakeVisible(rmsLevelHeading2);
@@ -28,24 +30,33 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     addAndMakeVisible(enableSmoothingButton);
     
     addAndMakeVisible(thresholdSlider);
+    addAndMakeVisible(attackTimeSlider);
+    addAndMakeVisible(releaseTimeSlider);
     
-    thresholdSlider.setRange(-60.0, 0.0, 0.1);
-    thresholdSlider.setSliderStyle(Slider::LinearHorizontal);
-    thresholdSlider.setTextBoxStyle(Slider::TextBoxRight, false, 100, 20);
-    thresholdSlider.setPopupDisplayEnabled(true, true, this);
+
+    thresholdSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    thresholdSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
     thresholdSlider.setTextValueSuffix(" dB");
+    
+    attackTimeSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    attackTimeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
+    attackTimeSlider.setTextValueSuffix(" ms");
+    
+    releaseTimeSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    releaseTimeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
+    releaseTimeSlider.setTextValueSuffix(" ms");
 
-    rmsLevelHeading1.setText("dBFS", dontSendNotification);
-    rmsLevelHeading1.setFont(Font{}.withStyle(Font::FontStyleFlags::bold));
-    rmsLevelHeading2.setText("Left \t Right", dontSendNotification);
-    rmsLevelHeading2.setFont(Font{}.withStyle(Font::FontStyleFlags::bold));
-    currentRmsLabel.setText("Current RMS:", dontSendNotification);
-    maxRmsLabel.setText("Max RMS:", dontSendNotification);
-    rmsPeriodLabel.setText("RMS Period", dontSendNotification);
-    rmsPeriodLabel.setJustificationType(Justification::right);
+    rmsLevelHeading1.setText("dBFS", juce::dontSendNotification);
+    rmsLevelHeading1.setFont(juce::Font{}.withStyle(juce::Font::FontStyleFlags::bold));
+    rmsLevelHeading2.setText("Left \t Right", juce::dontSendNotification);
+    rmsLevelHeading2.setFont(juce::Font{}.withStyle(juce::Font::FontStyleFlags::bold));
+    currentRmsLabel.setText("Current RMS:", juce::dontSendNotification);
+    maxRmsLabel.setText("Max RMS:", juce::dontSendNotification);
+    rmsPeriodLabel.setText("RMS Period", juce::dontSendNotification);
+    rmsPeriodLabel.setJustificationType(juce::Justification::right);
 
-    rmsPeriodSlider.setSliderStyle(Slider::LinearHorizontal);
-    rmsPeriodSlider.setTextBoxStyle(Slider::NoTextBox, true, 0, 0);
+    rmsPeriodSlider.setSliderStyle(juce::Slider::LinearHorizontal);
+    rmsPeriodSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
     rmsPeriodSlider.setPopupDisplayEnabled(true, false, this);
     rmsPeriodSlider.setTextValueSuffix(" ms");
 
@@ -77,17 +88,17 @@ void RMSCompressorAudioProcessorEditor::timerCallback()
         maxRmsLeft = leftGain;
     if (rightGain > maxRmsRight)
         maxRmsRight = rightGain;
-    currentRmsValue.setText(String{ leftGain, 2 } + "   " + String{ rightGain, 2 }, sendNotification);
-    maxRmsValue.setText(String{ maxRmsLeft, 2 } + "   " + String{ maxRmsRight, 2 }, sendNotification);
+    currentRmsValue.setText(juce::String{ leftGain, 2 } + "   " + juce::String{ rightGain, 2 }, juce::sendNotification);
+    maxRmsValue.setText(juce::String{ maxRmsLeft, 2 } + "   " + juce::String{ maxRmsRight, 2 }, juce::sendNotification);
 }
 
 //==============================================================================
 void RMSCompressorAudioProcessorEditor::paint (juce::Graphics& g)
 {
-    g.setGradientFill(ColourGradient{ Colours::darkgrey, getLocalBounds().toFloat().getCentre(), Colours::darkgrey.darker(0.7f), {}, true });
+    g.setGradientFill(juce::ColourGradient{ juce::Colours::darkgrey, getLocalBounds().toFloat().getCentre(), juce::Colours::darkgrey.darker(0.7f), {}, true });
     g.fillRect(getLocalBounds());
 
-    g.setColour(Colours::black);
+    g.setColour(juce::Colours::black);
 }
 
 void RMSCompressorAudioProcessorEditor::resized()
@@ -116,5 +127,7 @@ void RMSCompressorAudioProcessorEditor::resized()
     rmsPeriodSlider.setBounds(controlBounds.removeFromTop(labelHeight));
     enableSmoothingButton.setBounds(controlBounds);
     
-    thresholdSlider.setBounds(50, 250, 300, 100);
+    thresholdSlider.setBounds(getWidth() / getWidth() - 1, getHeight() / 2, getWidth() / 4, getHeight() / 4);
+    attackTimeSlider.setBounds(getWidth() / 3, getHeight() / 2, getWidth() / 4, getHeight() / 4);
+    releaseTimeSlider.setBounds(getWidth() / 1.5, getHeight() / 2, getWidth() / 4, getHeight() / 4);
 }

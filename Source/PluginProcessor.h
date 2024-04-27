@@ -16,7 +16,7 @@
 /**
 */
 class RMSCompressorAudioProcessor  : public juce::AudioProcessor,
-                                     public AudioProcessorValueTreeState::Listener
+                                     public juce::AudioProcessorValueTreeState::Listener
 {
 public:
     //==============================================================================
@@ -56,22 +56,26 @@ public:
     void getStateInformation (juce::MemoryBlock& destData) override;
     void setStateInformation (const void* data, int sizeInBytes) override;
 
-    void parameterChanged(const String& parameterID, float newValue) override;
-    AudioProcessorValueTreeState& getApvts() { return parameters; }
+    void parameterChanged(const juce::String& parameterID, float newValue) override;
+    juce::AudioProcessorValueTreeState& getApvts() { return parameters; }
+    
     std::vector<float> getRmsLevels();
     float getRmsLevel(const int channel);
+    
     Compressor compressor;
+    juce::AudioProcessorValueTreeState parameters;
+    
 private:
     
-    void processLevelValue(LinearSmoothedValue<float>&, const float value) const;
+    void processLevelValue(juce::LinearSmoothedValue<float>&, const float value) const;
     
-    AudioProcessorValueTreeState parameters;
-
-    std::vector<LinearSmoothedValue<float>> rmsLevels;
+    std::vector<juce::LinearSmoothedValue<float>> rmsLevels;
     Utility::Fifo rmsFifo;
-    AudioBuffer<float> rmsCalculationBuffer;
+    juce::AudioBuffer<float> rmsCalculationBuffer;
     
     float thresholdValue = -20.0f;
+    float attackTimeValue = 15.0f;
+    float releaseTimeValue = 50.0f;
     int rmsWindowSize = 50;
     double sampleRate = 44'100.0;
     bool isSmoothed = true;

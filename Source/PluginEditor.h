@@ -14,7 +14,7 @@
 //==============================================================================
 /**
 */
-class RMSCompressorAudioProcessorEditor  : public juce::AudioProcessorEditor, public Timer
+class RMSCompressorAudioProcessorEditor  : public juce::AudioProcessorEditor, public juce::Timer
 {
 public:
     RMSCompressorAudioProcessorEditor (RMSCompressorAudioProcessor&);
@@ -30,17 +30,21 @@ private:
     // access the processor object that created it.
     RMSCompressorAudioProcessor& audioProcessor;
     
-    Slider rmsPeriodSlider;
-    AudioProcessorValueTreeState::SliderAttachment rmsPeriodAttachment;
-    ToggleButton enableSmoothingButton;
-    AudioProcessorValueTreeState::ButtonAttachment enableSmoothingAttachment;
-    Slider thresholdSlider;
-    AudioProcessorValueTreeState::SliderAttachment thresholdAttachment;
+    juce::Slider rmsPeriodSlider;
+    juce::AudioProcessorValueTreeState::SliderAttachment rmsPeriodAttachment;
+    juce::ToggleButton enableSmoothingButton;
+    juce::AudioProcessorValueTreeState::ButtonAttachment enableSmoothingAttachment;
+    juce::Slider thresholdSlider;
+    juce::AudioProcessorValueTreeState::SliderAttachment thresholdAttachment;
+    juce::Slider attackTimeSlider;
+    juce::AudioProcessorValueTreeState::SliderAttachment attackTimeAttachment;
+    juce::Slider releaseTimeSlider;
+    juce::AudioProcessorValueTreeState::SliderAttachment releaseTimeAttachment;
     
-    Label rmsLevelHeading1, rmsLevelHeading2;
-    Label currentRmsLabel, maxRmsLabel;
-    Label currentRmsValue, maxRmsValue;
-    Label rmsPeriodLabel;
+    juce::Label rmsLevelHeading1, rmsLevelHeading2;
+    juce::Label currentRmsLabel, maxRmsLabel;
+    juce::Label currentRmsValue, maxRmsValue;
+    juce::Label rmsPeriodLabel;
     float maxRmsLeft{}, maxRmsRight{};
     int framesElapsed = 0;
 

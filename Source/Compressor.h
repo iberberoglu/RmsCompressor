@@ -3,7 +3,7 @@
 class Compressor {
 public:
     Compressor()
-        : thresholdDB(-20.0f), ratio(4.0f), attackTimeMS(300.0f), releaseTimeMS(500.0f),
+        : thresholdDB(-20.0f), ratio(1.0f), attackTimeMS(300.0f), releaseTimeMS(500.0f),
           sampleRate(44100.0f), gainReduction(1.0f) {}
 
     void setSampleRate(float newSampleRate) {
@@ -25,6 +25,7 @@ public:
 
     void setAttackTime(float ms) {
         attackTimeMS = ms;
+        
     }
 
     void setReleaseTime(float ms) {
