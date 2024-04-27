@@ -99,6 +99,7 @@ void RMSCompressorAudioProcessor::changeProgramName (int index, const juce::Stri
 void RMSCompressorAudioProcessor::prepareToPlay (double sr, int samplesPerBlock)
 {
     sampleRate = sr;
+    compressor.setSampleRate(sampleRate);
     const auto numberOfChannels = getTotalNumInputChannels();
     
     rmsLevels.clear();
