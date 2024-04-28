@@ -15,7 +15,7 @@ RMSCompressorAudioProcessor::RMSCompressorAudioProcessor()
      : AudioProcessor (BusesProperties()
                        .withInput("Input", juce::AudioChannelSet::stereo(), true)
                        .withOutput("Output", juce::AudioChannelSet::stereo(), true)),
-                   parameters(*this, nullptr, "LevelMeter", juce::AudioProcessorValueTreeState::ParameterLayout{
+                    parameters(*this, nullptr, "LevelMeter", juce::AudioProcessorValueTreeState::ParameterLayout{
                        std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "threshold",  1 }, "Threshold", juce::NormalisableRange<float>(-60.0f, 0.0f, 0.1f), -20.0f),
                        std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "attackTime", 1}, "AttackTime", juce::NormalisableRange<float>(0.0f, 200.0f, 0.1f), 15.0f),
                        std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "releaseTime", 1}, "ReleaseTime", juce::NormalisableRange<float>(5.0f, 5000.0f, 0.1f), 50.0f),
@@ -105,7 +105,6 @@ void RMSCompressorAudioProcessor::changeProgramName (int index, const juce::Stri
 void RMSCompressorAudioProcessor::prepareToPlay (double sr, int samplesPerBlock)
 {
     sampleRate = sr;
-    compressor.setSampleRate(sampleRate);
     const auto numberOfChannels = getTotalNumInputChannels();
     
     rmsLevels.clear();
@@ -125,6 +124,13 @@ void RMSCompressorAudioProcessor::prepareToPlay (double sr, int samplesPerBlock)
     thresholdValue = static_cast<float> (parameters.getRawParameterValue("threshold")->load());
     attackTimeValue = static_cast<float> (parameters.getRawParameterValue("attackTime")->load());
     releaseTimeValue = static_cast<float> (parameters.getRawParameterValue("releaseTime")->load());
+    
+    juce::dsp::ProcessSpec spec;
+    spec.maximumBlockSize = samplesPerBlock;
+    spec.numChannels = getTotalNumOutputChannels();
+    spec.sampleRate = sampleRate;
+    
+    compressor.prepare(spec);
     
 }
 
@@ -162,9 +168,7 @@ bool RMSCompressorAudioProcessor::isBusesLayoutSupported (const BusesLayout& lay
 
 void RMSCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer, juce::MidiBuffer& midiMessages)
 {
-//    juce::ScopedNoDenormals noDenormals;
-//    const auto numSamples = buffer.getNumSamples();
-//
+    
     juce::ScopedNoDenormals noDenormals;
     const auto numSamples = buffer.getNumSamples();
     
@@ -174,20 +178,14 @@ void RMSCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer
     rmsFifo.push(buffer);
     
     auto rmsLevels = getRmsLevels(); // RMS seviyelerini al
-
-    for (int channel = 0; channel < getTotalNumInputChannels(); ++channel) {
-        auto* channelData = buffer.getWritePointer(channel);
-
-        for (int i = 0; i < numSamples; ++i) {
-            // Her sample için RMS seviyesine göre işlem yap
-            channelData[i] = compressor.processSample(channelData[i], rmsLevels[channel]);
-        }
-    }
     
+    compressor.setRatio(10);
     
-    //seviye görmek için değişip değişmedii
-//    float threshh = compressor.threshOut();
-//    std::cout << threshh << std::endl;
+    auto block = juce::dsp::AudioBlock<float>(buffer);
+    auto context = juce::dsp::ProcessContextReplacing<float>(block);
+
+    compressor.process(context, rmsLevels);
+
     
 }
 
@@ -231,11 +229,11 @@ void RMSCompressorAudioProcessor::parameterChanged(const juce::String& parameter
     }
     if (parameterID.equalsIgnoreCase("attackTime")){
         attackTimeValue = newValue;  // Değişkeni güncelle
-        compressor.setAttackTime(newValue);
+        compressor.setAttack(newValue);
     }
     if (parameterID.equalsIgnoreCase("releaseTime")){
         releaseTimeValue = newValue;  // Değişkeni güncelle
-        compressor.setReleaseTime(newValue);
+        compressor.setRelease(newValue);
     }
 }
 

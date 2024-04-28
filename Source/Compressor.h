@@ -1,91 +1,92 @@
-#include <JuceHeader.h>
-
-class Compressor {
-public:
-    Compressor()
-        : thresholdDB(-20.0f), ratio(1.0f), attackTimeMS(300.0f), releaseTimeMS(500.0f),
-          sampleRate(44100.0f), gainReduction(1.0f) {}
-
-    void setSampleRate(float newSampleRate) {
-        sampleRate = newSampleRate;
-    }
-
-    void setThreshold(float dB) {
-        thresholdDB = dB;
-    }
-    
-    //seviye görmek için değişip değişmedii
-//    float threshOut(){
-//        return thresholdDB;
+//#include "../JuceLibraryCode/JuceHeader.h"
+//
+//class RMSCompressor
+//{
+//public:
+//    RMSCompressor() = default;
+//    ~RMSCompressor() = default;
+//
+//    void prepare(const juce::dsp::ProcessSpec& spec)
+//    {
+//        sampleRate = spec.sampleRate;
+//        rmsInput.setSize(1, spec.maximumBlockSize);  // RMS değerini depolamak için buffer
+//        rmsInput.clear();
+//        compressorEnabled = true;
 //    }
-    
-    void setRatio(float newRatio) {
-        ratio = newRatio;
-    }
-
-    void setAttackTime(float ms) {
-        attackTimeMS = ms;
-        
-    }
-
-    void setReleaseTime(float ms) {
-        releaseTimeMS = ms;
-    }
-
-    float processSample(float input, float rmsLevel) {
-//        float thresholdLevel = juce::Decibels::decibelsToGain(thresholdDB);
-//        float rmsLvl = juce::Decibels::decibelsToGain(rmsLevel);
 //
-////        if (rmsLvl > thresholdLevel) {
-//////            float compressionAmount = 1.0f - (1.0f / ratio);
-//////            float compressedSample = input * (1.0f - compressionAmount);
-////            
-////            float excessLevel = rmsLvl - thresholdLevel;
-////            float gainReduction = 1.0f - (1.0f / ratio);
-////            float compressedSample = input * (thresholdLevel + (excessLevel * gainReduction));
+//    void setThreshold(float dB)
+//    {
+//        threshold = juce::Decibels::decibelsToGain(dB);  // Threshold dB cinsinden alınır ve gain'e çevrilir
+//    }
 //
-////            
-////            return compressedSample;
-////        }
-//        
-//        if (rmsLvl > thresholdLevel) {
-//            float excessDB = juce::Decibels::gainToDecibels(rmsLvl) - thresholdDB; // Eşiği ne kadar aştığını hesapla (dB cinsinden)
-//            float allowedIncreaseDB = excessDB / ratio; // İzin verilen artış miktarı (dB cinsinden)
-//            float targetDB = thresholdDB + allowedIncreaseDB; // Hedef dB seviyesi
+//    void setAttack(float ms)
+//    {
+//        attack = ms;
+//    }
 //
-//            float targetGain = juce::Decibels::decibelsToGain(targetDB);
-//            float compressedSample = input * targetGain / rmsLvl; // Kazanç oranına göre sıkıştır
+//    void setRelease(float ms)
+//    {
+//        release = ms;
+//    }
 //
-//            return compressedSample;
+//    void setRatio(float compressionRatio)
+//    {
+//        ratio = compressionRatio;
+//    }
+//    
+//    void setSampleRate(float sr)
+//    {
+//        sampleRate = sr;
+//    }
+//
+//    void process(juce::AudioBuffer<float>& buffer, float rmsValue)
+//    {
+//        if (!compressorEnabled)
+//            return;
+//
+//        auto numSamples = buffer.getNumSamples();
+//        auto numChannels = buffer.getNumChannels();
+//
+//        for (int sample = 0; sample < numSamples; ++sample)
+//        {
+//            float currentGain = 1.0f;
+//            if (rmsValue > threshold)
+//            {
+//                float excess = rmsValue - threshold;
+//                float gainReduction = excess - (excess / ratio);
+//                currentGain = juce::Decibels::decibelsToGain(-gainReduction);
+//            }
+//
+//            currentGain = gainSmoothing(currentGain, sampleRate);
+//
+//            for (int channel = 0; channel < numChannels; ++channel)
+//            {
+//                buffer.getWritePointer(channel)[sample] *= currentGain;
+//            }
 //        }
+//    }
 //
-//        return input;
-        
-        float thresholdLevel = juce::Decibels::decibelsToGain(thresholdDB);
-        float rmsLvl = juce::Decibels::decibelsToGain(rmsLevel);
-
-        float targetGain;
-        if (rmsLvl > thresholdLevel) {
-            float excessDB = juce::Decibels::gainToDecibels(rmsLvl) - thresholdDB;
-            float allowedIncreaseDB = excessDB / ratio;
-            float targetDB = thresholdDB + allowedIncreaseDB;
-            targetGain = juce::Decibels::decibelsToGain(targetDB);
-
-            float attackCoefficient = std::exp(-1.0 / (0.001 * attackTimeMS * sampleRate));
-            gainReduction = attackCoefficient * gainReduction + (1 - attackCoefficient) * targetGain;
-        } else {
-            float releaseCoefficient = std::exp(-1.0 / (0.001 * releaseTimeMS * sampleRate));
-            gainReduction = releaseCoefficient * gainReduction + (1 - releaseCoefficient) * 1.0f; // Release to no compression
-        }
-
-        return input * gainReduction;
-    }
-
-private:
-    float thresholdDB;
-    float ratio;
-    float attackTimeMS;
-    float releaseTimeMS;
-    float sampleRate;
-    float gainReduction;
-};
+//    void enableCompressor(bool enable)
+//    {
+//        compressorEnabled = enable;
+//    }
+//
+//private:
+//    bool compressorEnabled = true;
+//    float threshold = 1.0f;  // Default olarak 0 dB
+//    float attack = 10.0f;    // ms cinsinden
+//    float release = 100.0f;  // ms cinsinden
+//    float ratio = 4.0f;      // Oran
+//    float sampleRate = 44100.0f;  // Varsayılan örnek oranı
+//
+//    juce::AudioBuffer<float> rmsInput;
+//
+//    float gainSmoothing(float targetGain, float sampleRate)
+//    {
+//        // Gain değerini yavaşlatarak (attack/release süreleri dikkate alınarak) uygular
+//        static float smoothedGain = 1.0f;
+//        float smoothingRate = (targetGain < smoothedGain) ? (attack / sampleRate) : (release / sampleRate);
+//        smoothedGain += (targetGain - smoothedGain) * smoothingRate;
+//        return smoothedGain;
+//    }
+//};

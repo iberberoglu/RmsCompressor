@@ -10,7 +10,7 @@
 
 #include <JuceHeader.h>
 #include "Fifo.h"
-#include "Compressor.h"
+//#include "Compressor.h"
 
 //==============================================================================
 /**
@@ -62,10 +62,11 @@ public:
     std::vector<float> getRmsLevels();
     float getRmsLevel(const int channel);
     
-    Compressor compressor;
+//    RMSCompressor compressor;
     juce::AudioProcessorValueTreeState parameters;
     
 private:
+    juce::dsp::Compressor<float> compressor;
     
     void processLevelValue(juce::LinearSmoothedValue<float>&, const float value) const;
     
