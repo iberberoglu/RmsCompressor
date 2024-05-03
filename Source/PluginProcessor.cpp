@@ -15,19 +15,14 @@ RMSCompressorAudioProcessor::RMSCompressorAudioProcessor()
      : AudioProcessor (BusesProperties()
                        .withInput("Input", juce::AudioChannelSet::stereo(), true)
                        .withOutput("Output", juce::AudioChannelSet::stereo(), true)),
-                    parameters(*this, nullptr, "LevelMeter", juce::AudioProcessorValueTreeState::ParameterLayout{
-                       std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "threshold",  1 }, "Threshold", juce::NormalisableRange<float>(-60.0f, 0.0f, 0.1f), -20.0f),
-                       std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "attackTime", 1}, "AttackTime", juce::NormalisableRange<float>(0.0f, 200.0f, 0.1f), 15.0f),
-                       std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "releaseTime", 1}, "ReleaseTime", juce::NormalisableRange<float>(5.0f, 5000.0f, 0.1f), 50.0f),
-                       std::make_unique<juce::AudioParameterInt>(juce::ParameterID { "rmsPeriod",  1 }, "Period", 1, 3000, 50),
-                       std::make_unique<juce::AudioParameterBool>(juce::ParameterID { "smoothing",  1 }, "Enable Smoothing", true)
-                   })
+                    parameters(*this, nullptr, "LevelMeter", createParameters())
 {
     parameters.addParameterListener("rmsPeriod", this);
     parameters.addParameterListener("smoothing", this);
     parameters.addParameterListener("threshold", this);
     parameters.addParameterListener("attackTime", this);
     parameters.addParameterListener("releaseTime", this);
+    parameters.addParameterListener("ratio", this);
 }
 
 RMSCompressorAudioProcessor::~RMSCompressorAudioProcessor()
@@ -37,6 +32,7 @@ RMSCompressorAudioProcessor::~RMSCompressorAudioProcessor()
     parameters.removeParameterListener("threshold", this);
     parameters.removeParameterListener("attackTime", this);
     parameters.removeParameterListener("releaseTime", this);
+    parameters.removeParameterListener("ratio", this);
 }
 
 //==============================================================================
@@ -124,6 +120,7 @@ void RMSCompressorAudioProcessor::prepareToPlay (double sr, int samplesPerBlock)
     thresholdValue = static_cast<float> (parameters.getRawParameterValue("threshold")->load());
     attackTimeValue = static_cast<float> (parameters.getRawParameterValue("attackTime")->load());
     releaseTimeValue = static_cast<float> (parameters.getRawParameterValue("releaseTime")->load());
+    ratioValue = static_cast<float> (parameters.getRawParameterValue("ratio")->load());
     
     juce::dsp::ProcessSpec spec;
     spec.maximumBlockSize = samplesPerBlock;
@@ -175,11 +172,11 @@ void RMSCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer
     for (auto& rmsLevel : rmsLevels)
         rmsLevel.skip(numSamples);
     
+    
+    
     rmsFifo.push(buffer);
     
     auto rmsLevels = getRmsLevels(); // RMS seviyelerini al
-    
-    compressor.setRatio(10);
     
     auto block = juce::dsp::AudioBlock<float>(buffer);
     auto context = juce::dsp::ProcessContextReplacing<float>(block);
@@ -217,6 +214,34 @@ void RMSCompressorAudioProcessor::setStateInformation (const void* data, int siz
             parameters.replaceState (juce::ValueTree::fromXml (*xmlState));
 }
 
+juce::AudioProcessorValueTreeState::ParameterLayout RMSCompressorAudioProcessor::createParameters()
+{
+    // PARAMETRELERIN YARATILDIĞI YER
+    
+    std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
+    
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "threshold",  1 }, "Threshold", juce::NormalisableRange<float>(-60.0f, 0.0f, 0.1f), -20.0f));
+    
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "attackTime", 1}, "AttackTime", juce::NormalisableRange<float>(0.0f, 1000.0f, 0.1f), 15.0f));
+    
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "releaseTime", 1}, "ReleaseTime", juce::NormalisableRange<float>(5.0f, 4000.0f, 0.1f), 50.0f));
+    
+    params.push_back(std::make_unique<juce::AudioParameterInt>(juce::ParameterID { "rmsPeriod",  1 }, "Period", 1, 3000, 50));
+    
+    params.push_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID { "smoothing",  1 }, "Enable Smoothing", true));
+    
+    auto choices = std::vector<float>{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 15.0, 20.0, 50.0, 100.0};
+    juce::StringArray sa;
+    for(auto choice: choices)
+    {
+        sa.add(juce::String(choice, 1));
+    }
+    
+    params.push_back(std::make_unique<juce::AudioParameterChoice>(juce::ParameterID {"ratio", 1}, "Ratio", sa, 4));
+    
+    return {params.begin(), params.end()};
+}
+
 void RMSCompressorAudioProcessor::parameterChanged(const juce::String& parameterID, float newValue)
 {
     if (parameterID.equalsIgnoreCase("rmsPeriod"))
@@ -234,6 +259,10 @@ void RMSCompressorAudioProcessor::parameterChanged(const juce::String& parameter
     if (parameterID.equalsIgnoreCase("releaseTime")){
         releaseTimeValue = newValue;  // Değişkeni güncelle
         compressor.setRelease(newValue);
+    }
+    if (parameterID.equalsIgnoreCase("ratio")){
+        auto ratioIndex = newValue;
+        compressor.setRatio(ratioValues[ratioIndex]);
     }
 }
 

@@ -62,7 +62,6 @@ public:
     std::vector<float> getRmsLevels();
     float getRmsLevel(const int channel);
     
-//    RMSCompressor compressor;
     juce::AudioProcessorValueTreeState parameters;
     
 private:
@@ -77,9 +76,12 @@ private:
     float thresholdValue = -20.0f;
     float attackTimeValue = 15.0f;
     float releaseTimeValue = 50.0f;
+    float ratioValue = 4.0f;
+    std::vector<float> ratioValues {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 15.0, 20.0, 50.0, 100.0};
     int rmsWindowSize = 50;
     double sampleRate = 44'100.0;
     bool isSmoothed = true;
+    juce::AudioProcessorValueTreeState::ParameterLayout createParameters();
     //==============================================================================
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RMSCompressorAudioProcessor)
 };

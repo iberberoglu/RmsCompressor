@@ -16,7 +16,8 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     enableSmoothingAttachment(p.getApvts(), "smoothing", enableSmoothingButton),
     thresholdAttachment(p.getApvts(), "threshold", thresholdSlider),
     attackTimeAttachment(p.getApvts(), "attackTime", attackTimeSlider),
-    releaseTimeAttachment(p.getApvts(), "releaseTime", releaseTimeSlider)
+    releaseTimeAttachment(p.getApvts(), "releaseTime", releaseTimeSlider),
+    ratioAttachment(p.getApvts(), "ratio", ratioSlider)
 {
     addAndMakeVisible(rmsLevelHeading1);
     addAndMakeVisible(rmsLevelHeading2);
@@ -25,6 +26,7 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     addAndMakeVisible(currentRmsValue);
     addAndMakeVisible(maxRmsValue);
     addAndMakeVisible(rmsPeriodLabel);
+    addAndMakeVisible(ratioSlider);
 
     addAndMakeVisible(rmsPeriodSlider);
     addAndMakeVisible(enableSmoothingButton);
@@ -45,6 +47,9 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     releaseTimeSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     releaseTimeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
     releaseTimeSlider.setTextValueSuffix(" ms");
+    
+    ratioSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    ratioSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
 
     rmsLevelHeading1.setText("dBFS", juce::dontSendNotification);
     rmsLevelHeading1.setFont(juce::Font{}.withStyle(juce::Font::FontStyleFlags::bold));
@@ -62,7 +67,7 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
 
     enableSmoothingButton.setButtonText("Enable smoothing");
 
-    setSize (400, 500);
+    setSize (600, 700);
     setResizable(true, true);
     setResizeLimits(400, 400, 1000, 1000);
     startTimerHz(24);
@@ -130,4 +135,6 @@ void RMSCompressorAudioProcessorEditor::resized()
     thresholdSlider.setBounds(getWidth() / getWidth() - 1, getHeight() / 2, getWidth() / 4, getHeight() / 4);
     attackTimeSlider.setBounds(getWidth() / 3, getHeight() / 2, getWidth() / 4, getHeight() / 4);
     releaseTimeSlider.setBounds(getWidth() / 1.5, getHeight() / 2, getWidth() / 4, getHeight() / 4);
+    
+    ratioSlider.setBounds(300, 200, 100, 100);
 }

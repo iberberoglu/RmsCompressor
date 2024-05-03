@@ -40,6 +40,8 @@ private:
     juce::AudioProcessorValueTreeState::SliderAttachment attackTimeAttachment;
     juce::Slider releaseTimeSlider;
     juce::AudioProcessorValueTreeState::SliderAttachment releaseTimeAttachment;
+    juce::Slider ratioSlider;
+    juce::AudioProcessorValueTreeState::SliderAttachment ratioAttachment;
     
     juce::Label rmsLevelHeading1, rmsLevelHeading2;
     juce::Label currentRmsLabel, maxRmsLabel;
