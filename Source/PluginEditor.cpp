@@ -19,6 +19,9 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     releaseTimeAttachment(p.getApvts(), "releaseTime", releaseTimeSlider),
     ratioAttachment(p.getApvts(), "ratio", ratioSlider)
 {
+    
+    addAndMakeVisible(gainReductionMeter);
+    
     addAndMakeVisible(rmsLevelHeading1);
     addAndMakeVisible(rmsLevelHeading2);
     addAndMakeVisible(currentRmsLabel);
@@ -67,9 +70,9 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
 
     enableSmoothingButton.setButtonText("Enable smoothing");
 
-    setSize (600, 700);
+    setSize (600, 600);
     setResizable(true, true);
-    setResizeLimits(400, 400, 1000, 1000);
+    setResizeLimits(500, 500, 1000, 1000);
     startTimerHz(24);
 }
 
@@ -80,6 +83,12 @@ RMSCompressorAudioProcessorEditor::~RMSCompressorAudioProcessorEditor()
 
 void RMSCompressorAudioProcessorEditor::timerCallback()
 {
+    // Gain reduction değerini al
+    float currentGainReduction = audioProcessor.compressor.gainReductionFunc();
+
+    // Metre güncelle
+    gainReductionMeter.setGainReductionDb(currentGainReduction);
+    
     if (++framesElapsed > 100)
     {
         framesElapsed = 0;
@@ -108,6 +117,16 @@ void RMSCompressorAudioProcessorEditor::paint (juce::Graphics& g)
 
 void RMSCompressorAudioProcessorEditor::resized()
 {
+    int newWidth = getWidth();
+    int newHeight = getHeight();
+
+    // En ve boy oranını koruyarak pencereyi kare yapın
+    if (newWidth != newHeight)
+    {
+        int size = std::min(newWidth, newHeight);
+        setSize(size, size);
+    }
+    
     const auto container = getBounds().reduced(20);
     auto bounds = container;
 
@@ -132,9 +151,11 @@ void RMSCompressorAudioProcessorEditor::resized()
     rmsPeriodSlider.setBounds(controlBounds.removeFromTop(labelHeight));
     enableSmoothingButton.setBounds(controlBounds);
     
-    thresholdSlider.setBounds(getWidth() / getWidth() - 1, getHeight() / 2, getWidth() / 4, getHeight() / 4);
-    attackTimeSlider.setBounds(getWidth() / 3, getHeight() / 2, getWidth() / 4, getHeight() / 4);
-    releaseTimeSlider.setBounds(getWidth() / 1.5, getHeight() / 2, getWidth() / 4, getHeight() / 4);
+    thresholdSlider.setBounds(0, getHeight() / 1.5, getWidth() / 4, getHeight() / 4);
+    ratioSlider.setBounds(getWidth() / 4, getHeight() / 1.5, getWidth() / 4, getHeight() / 4);
+    attackTimeSlider.setBounds(getWidth() / 2, getHeight() / 1.5, getWidth() / 4, getHeight() / 4);
+    releaseTimeSlider.setBounds(getWidth() / 1.33333333, getHeight() / 1.5, getWidth() / 4, getHeight() / 4);
     
-    ratioSlider.setBounds(300, 200, 100, 100);
+    gainReductionMeter.setBounds((getWidth() / 2) - (getWidth() / 2) / 2, getHeight() / 4, getWidth() / 2, getHeight() / 2);
+
 }

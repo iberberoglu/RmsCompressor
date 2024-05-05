@@ -111,9 +111,9 @@ void RMSCompressorAudioProcessor::prepareToPlay (double sr, int samplesPerBlock)
         rmsLevels.emplace_back(std::move(rms));
     }
 
-    rmsFifo.reset(numberOfChannels, (static_cast<int>(sampleRate) * 4) + 1);
+    rmsFifo.reset(numberOfChannels, (static_cast<int>(sampleRate) * 2) + 1);
     rmsCalculationBuffer.clear();
-    rmsCalculationBuffer.setSize(numberOfChannels, (static_cast<int>(sampleRate) * 4) + 1);
+    rmsCalculationBuffer.setSize(numberOfChannels, (static_cast<int>(sampleRate) * 2) + 1);
 
     rmsWindowSize =  static_cast<int> (sampleRate * parameters.getRawParameterValue("rmsPeriod")->load()) / 1000;
     isSmoothed = static_cast<bool> (parameters.getRawParameterValue("smoothing")->load());
@@ -128,6 +128,8 @@ void RMSCompressorAudioProcessor::prepareToPlay (double sr, int samplesPerBlock)
     spec.sampleRate = sampleRate;
     
     compressor.prepare(spec);
+    compressor.setThreshold(thresholdValue);
+    compressor.setRatio(ratioValue);
     
 }
 
@@ -172,18 +174,15 @@ void RMSCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer
     for (auto& rmsLevel : rmsLevels)
         rmsLevel.skip(numSamples);
     
-    
-    
     rmsFifo.push(buffer);
     
     auto rmsLevels = getRmsLevels(); // RMS seviyelerini al
     
     auto block = juce::dsp::AudioBlock<float>(buffer);
     auto context = juce::dsp::ProcessContextReplacing<float>(block);
-
+    
     compressor.process(context, rmsLevels);
 
-    
 }
 
 //==============================================================================
@@ -222,11 +221,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout RMSCompressorAudioProcessor:
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "threshold",  1 }, "Threshold", juce::NormalisableRange<float>(-60.0f, 0.0f, 0.1f), -20.0f));
     
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "attackTime", 1}, "AttackTime", juce::NormalisableRange<float>(0.0f, 1000.0f, 0.1f), 15.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "attackTime", 1}, "AttackTime", juce::NormalisableRange<float>(0.5f, 300.0f, 0.1f), 15.0f));
     
-    params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "releaseTime", 1}, "ReleaseTime", juce::NormalisableRange<float>(5.0f, 4000.0f, 0.1f), 50.0f));
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "releaseTime", 1}, "ReleaseTime", juce::NormalisableRange<float>(5.0f, 1000.0f, 0.1f), 50.0f));
     
-    params.push_back(std::make_unique<juce::AudioParameterInt>(juce::ParameterID { "rmsPeriod",  1 }, "Period", 1, 3000, 50));
+    params.push_back(std::make_unique<juce::AudioParameterInt>(juce::ParameterID { "rmsPeriod",  1 }, "Period", 1, 1500, 50));
     
     params.push_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID { "smoothing",  1 }, "Enable Smoothing", true));
     

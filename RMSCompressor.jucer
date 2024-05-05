@@ -5,7 +5,8 @@
               companyName="ismailberberoglu">
   <MAINGROUP id="uPbVgg" name="RMSCompressor">
     <GROUP id="{EC28DB35-CDEB-E1CB-7CBF-F4E91AEA92AE}" name="Source">
-      <FILE id="hxLsD3" name="Compressor.h" compile="0" resource="0" file="Source/Compressor.h"/>
+      <FILE id="za6fZJ" name="GainReductionMeter.h" compile="0" resource="0"
+            file="Source/GainReductionMeter.h"/>
       <FILE id="TKn21O" name="Fifo.h" compile="0" resource="0" file="Source/Fifo.h"/>
       <FILE id="woWmrb" name="PluginProcessor.cpp" compile="1" resource="0"
             file="Source/PluginProcessor.cpp"/>

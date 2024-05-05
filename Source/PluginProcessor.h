@@ -64,8 +64,18 @@ public:
     
     juce::AudioProcessorValueTreeState parameters;
     
-private:
+    //float gainReductionDb;
+    
     juce::dsp::Compressor<float> compressor;
+    
+private:
+    
+    std::vector<double> rmsBuffer;
+    
+    float totalInputDb = 0.0f;
+    float totalOutputDb = 0.0f;
+    float averageInputDb;
+    float averageOutputDb;
     
     void processLevelValue(juce::LinearSmoothedValue<float>&, const float value) const;
     
@@ -76,7 +86,7 @@ private:
     float thresholdValue = -20.0f;
     float attackTimeValue = 15.0f;
     float releaseTimeValue = 50.0f;
-    float ratioValue = 4.0f;
+    float ratioValue = 3.0f;
     std::vector<float> ratioValues {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 15.0, 20.0, 50.0, 100.0};
     int rmsWindowSize = 50;
     double sampleRate = 44'100.0;

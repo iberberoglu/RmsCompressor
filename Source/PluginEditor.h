@@ -10,6 +10,7 @@
 
 #include <JuceHeader.h>
 #include "PluginProcessor.h"
+#include "GainReductionMeter.h"
 
 //==============================================================================
 /**
@@ -49,6 +50,8 @@ private:
     juce::Label rmsPeriodLabel;
     float maxRmsLeft{}, maxRmsRight{};
     int framesElapsed = 0;
+    
+    GainReductionMeter gainReductionMeter;
 
 
     JUCE_DECLARE_NON_COPYABLE_WITH_LEAK_DETECTOR (RMSCompressorAudioProcessorEditor)
