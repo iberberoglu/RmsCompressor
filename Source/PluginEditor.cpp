@@ -156,6 +156,6 @@ void RMSCompressorAudioProcessorEditor::resized()
     attackTimeSlider.setBounds(getWidth() / 2, getHeight() / 1.5, getWidth() / 4, getHeight() / 4);
     releaseTimeSlider.setBounds(getWidth() / 1.33333333, getHeight() / 1.5, getWidth() / 4, getHeight() / 4);
     
-    gainReductionMeter.setBounds((getWidth() / 2) - (getWidth() / 2) / 2, getHeight() / 4, getWidth() / 2, getHeight() / 2);
+    gainReductionMeter.setBounds((getWidth() / 2) - (getWidth() / 2) / 2, getHeight() / 5, getWidth() / 2, getHeight() / 2);
 
 }
