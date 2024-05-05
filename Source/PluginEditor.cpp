@@ -17,7 +17,8 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     thresholdAttachment(p.getApvts(), "threshold", thresholdSlider),
     attackTimeAttachment(p.getApvts(), "attackTime", attackTimeSlider),
     releaseTimeAttachment(p.getApvts(), "releaseTime", releaseTimeSlider),
-    ratioAttachment(p.getApvts(), "ratio", ratioSlider)
+    ratioAttachment(p.getApvts(), "ratio", ratioSlider),
+    makeupGainAttachment(p.getApvts(), "makeupGain", makeupGainSlider)
 {
     
     addAndMakeVisible(gainReductionMeter);
@@ -30,6 +31,7 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     addAndMakeVisible(maxRmsValue);
     addAndMakeVisible(rmsPeriodLabel);
     addAndMakeVisible(ratioSlider);
+    addAndMakeVisible(makeupGainSlider);
 
     addAndMakeVisible(rmsPeriodSlider);
     addAndMakeVisible(enableSmoothingButton);
@@ -38,21 +40,50 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     addAndMakeVisible(attackTimeSlider);
     addAndMakeVisible(releaseTimeSlider);
     
-
+    addAndMakeVisible(thresholdLabel);
+    addAndMakeVisible(attackTimeLabel);
+    addAndMakeVisible(releaseTimeLabel);
+    addAndMakeVisible(ratioLabel);
+    addAndMakeVisible(makeupGainLabel);
+    
     thresholdSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     thresholdSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
     thresholdSlider.setTextValueSuffix(" dB");
+    
+    thresholdLabel.setText("Threshold", juce::dontSendNotification);
+    thresholdLabel.setFont(juce::Font{}.withStyle(juce::Font::FontStyleFlags::bold));
+    thresholdLabel.setJustificationType(juce::Justification::centred);
     
     attackTimeSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     attackTimeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
     attackTimeSlider.setTextValueSuffix(" ms");
     
+    attackTimeLabel.setText("Attack", juce::dontSendNotification);
+    attackTimeLabel.setFont(juce::Font{}.withStyle(juce::Font::FontStyleFlags::bold));
+    attackTimeLabel.setJustificationType(juce::Justification::centred);
+    
     releaseTimeSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     releaseTimeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
     releaseTimeSlider.setTextValueSuffix(" ms");
     
+    releaseTimeLabel.setText("Release", juce::dontSendNotification);
+    releaseTimeLabel.setFont(juce::Font{}.withStyle(juce::Font::FontStyleFlags::bold));
+    releaseTimeLabel.setJustificationType(juce::Justification::centred);
+    
     ratioSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     ratioSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
+    
+    ratioLabel.setText("Ratio", juce::dontSendNotification);
+    ratioLabel.setFont(juce::Font{}.withStyle(juce::Font::FontStyleFlags::bold));
+    ratioLabel.setJustificationType(juce::Justification::centred);
+    
+    makeupGainSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    makeupGainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
+    makeupGainSlider.setTextValueSuffix(" dB");
+    
+    makeupGainLabel.setText("Make Up", juce::dontSendNotification);
+    makeupGainLabel.setFont(juce::Font{}.withStyle(juce::Font::FontStyleFlags::bold));
+    makeupGainLabel.setJustificationType(juce::Justification::centred);
 
     rmsLevelHeading1.setText("dBFS", juce::dontSendNotification);
     rmsLevelHeading1.setFont(juce::Font{}.withStyle(juce::Font::FontStyleFlags::bold));
@@ -67,6 +98,9 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     rmsPeriodSlider.setTextBoxStyle(juce::Slider::NoTextBox, true, 0, 0);
     rmsPeriodSlider.setPopupDisplayEnabled(true, false, this);
     rmsPeriodSlider.setTextValueSuffix(" ms");
+    
+    getLookAndFeel().setColour(juce::Slider::thumbColourId, juce::Colours::darkturquoise);
+   // getLookAndFeel().setColour(juce::Slider::rotarySliderOutlineColourId, juce::Colours::white);
 
     enableSmoothingButton.setButtonText("Enable smoothing");
 
@@ -152,9 +186,19 @@ void RMSCompressorAudioProcessorEditor::resized()
     enableSmoothingButton.setBounds(controlBounds);
     
     thresholdSlider.setBounds(0, getHeight() / 1.5, getWidth() / 4, getHeight() / 4);
+    thresholdLabel.setBounds(getWidth() / 16, getHeight() / 1.14 , getWidth() / 8 , getHeight() / 8);
+    
     ratioSlider.setBounds(getWidth() / 4, getHeight() / 1.5, getWidth() / 4, getHeight() / 4);
+    ratioLabel.setBounds(getWidth() / 3.2, getHeight() / 1.14, getWidth() / 8, getHeight() / 8);
+    
     attackTimeSlider.setBounds(getWidth() / 2, getHeight() / 1.5, getWidth() / 4, getHeight() / 4);
+    attackTimeLabel.setBounds(getWidth() / 1.7777, getHeight() / 1.14 ,getWidth() / 8, getHeight() / 8);
+    
     releaseTimeSlider.setBounds(getWidth() / 1.33333333, getHeight() / 1.5, getWidth() / 4, getHeight() / 4);
+    releaseTimeLabel.setBounds(getWidth() / 1.2307692, getHeight() / 1.14, getWidth() / 8, getHeight() / 8);
+    
+    makeupGainSlider.setBounds(getWidth() / 1.33333333, getHeight() / 3, getWidth() / 4, getHeight() / 4);
+    makeupGainLabel.setBounds(getWidth() / 1.2307692, getHeight() / 1.84 ,getWidth() / 8, getHeight() / 8);
     
     gainReductionMeter.setBounds((getWidth() / 2) - (getWidth() / 2) / 2, getHeight() / 5, getWidth() / 2, getHeight() / 2);
 

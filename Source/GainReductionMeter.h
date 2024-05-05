@@ -28,8 +28,11 @@ public:
             float angleSecond = juce::jmap(float(i+1), 0.0f, float(numMarks - 1), startAngle, endAngle);
             juce::Point<float> end = centre.getPointOnCircumference(radius - 10, angle);
             juce::Point<float> start = centre.getPointOnCircumference(radius - 20, angle);
-
-            g.setColour(juce::Colours::white);
+            if(i < 7){
+                g.setColour(juce::Colours::white);
+            }else{
+                g.setColour(juce::Colours::red);
+            }
             g.drawLine(juce::Line<float>(start, end), 2.0f);
             
             if(i < 4){
@@ -37,7 +40,6 @@ public:
                     float angleS = juce::jmap(float(j), 0.0f, float(5), angle, angleSecond);
                     juce::Point<float> endS = centre.getPointOnCircumference(radius - 15, angleS);
                     juce::Point<float> startS = centre.getPointOnCircumference(radius - 20, angleS);
-                    g.setColour(juce::Colours::white);
                     g.drawLine(juce::Line<float>(startS, endS), 2.0f);
                 }
             }else if(i >= 4 && i < 9){
@@ -45,13 +47,13 @@ public:
                     float angleS = juce::jmap(float(j), 0.0f, float(10), angle, angleSecond);
                     juce::Point<float> endS = centre.getPointOnCircumference(radius - 15, angleS);
                     juce::Point<float> startS = centre.getPointOnCircumference(radius - 20, angleS);
-                    g.setColour(juce::Colours::white);
                     g.drawLine(juce::Line<float>(startS, endS), 1.0f);
                 }
             }
 
 
             if (i % 1 == 0) {
+                g.setColour(juce::Colours::white);
                 auto text = juce::String(marks[i]);
                 juce::Rectangle<float> textArea(0, 0, 40, 20);
                 textArea.setCentre(start.getPointOnCircumference(-25, angle));
@@ -69,7 +71,7 @@ public:
         }
         juce::Point<float> needleEnd = centre.getPointOnCircumference(radius - 20, angle);
         juce::Point<float> needleStart = centre.getPointOnCircumference(radius - 60, angle);
-        g.setColour(juce::Colours::red);
+        g.setColour(juce::Colours::darkturquoise);
         g.drawLine(juce::Line<float>(needleStart, needleEnd), 2.0f);
     }
 

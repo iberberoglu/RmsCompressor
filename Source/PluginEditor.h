@@ -35,14 +35,22 @@ private:
     juce::AudioProcessorValueTreeState::SliderAttachment rmsPeriodAttachment;
     juce::ToggleButton enableSmoothingButton;
     juce::AudioProcessorValueTreeState::ButtonAttachment enableSmoothingAttachment;
+    
     juce::Slider thresholdSlider;
+    juce::Label thresholdLabel;
     juce::AudioProcessorValueTreeState::SliderAttachment thresholdAttachment;
     juce::Slider attackTimeSlider;
+    juce::Label attackTimeLabel;
     juce::AudioProcessorValueTreeState::SliderAttachment attackTimeAttachment;
     juce::Slider releaseTimeSlider;
+    juce::Label releaseTimeLabel;
     juce::AudioProcessorValueTreeState::SliderAttachment releaseTimeAttachment;
     juce::Slider ratioSlider;
+    juce::Label ratioLabel;
     juce::AudioProcessorValueTreeState::SliderAttachment ratioAttachment;
+    juce::Slider makeupGainSlider;
+    juce::Label makeupGainLabel;
+    juce::AudioProcessorValueTreeState::SliderAttachment makeupGainAttachment;
     
     juce::Label rmsLevelHeading1, rmsLevelHeading2;
     juce::Label currentRmsLabel, maxRmsLabel;

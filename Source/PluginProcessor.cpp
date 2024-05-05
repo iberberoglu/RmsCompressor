@@ -23,6 +23,7 @@ RMSCompressorAudioProcessor::RMSCompressorAudioProcessor()
     parameters.addParameterListener("attackTime", this);
     parameters.addParameterListener("releaseTime", this);
     parameters.addParameterListener("ratio", this);
+    parameters.addParameterListener("makeupGain", this);
 }
 
 RMSCompressorAudioProcessor::~RMSCompressorAudioProcessor()
@@ -33,6 +34,7 @@ RMSCompressorAudioProcessor::~RMSCompressorAudioProcessor()
     parameters.removeParameterListener("attackTime", this);
     parameters.removeParameterListener("releaseTime", this);
     parameters.removeParameterListener("ratio", this);
+    parameters.removeParameterListener("makeupGain", this);
 }
 
 //==============================================================================
@@ -121,6 +123,7 @@ void RMSCompressorAudioProcessor::prepareToPlay (double sr, int samplesPerBlock)
     attackTimeValue = static_cast<float> (parameters.getRawParameterValue("attackTime")->load());
     releaseTimeValue = static_cast<float> (parameters.getRawParameterValue("releaseTime")->load());
     ratioValue = static_cast<float> (parameters.getRawParameterValue("ratio")->load());
+    makeupGainValue = static_cast<float> (parameters.getRawParameterValue("makeupGain")->load());
     
     juce::dsp::ProcessSpec spec;
     spec.maximumBlockSize = samplesPerBlock;
@@ -225,6 +228,8 @@ juce::AudioProcessorValueTreeState::ParameterLayout RMSCompressorAudioProcessor:
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "releaseTime", 1}, "ReleaseTime", juce::NormalisableRange<float>(5.0f, 1000.0f, 0.1f), 50.0f));
     
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "makeupGain", 1}, "MakeupGain", juce::NormalisableRange<float>(-20.0f, 20.0f, 0.1f), 0.0f));
+    
     params.push_back(std::make_unique<juce::AudioParameterInt>(juce::ParameterID { "rmsPeriod",  1 }, "Period", 1, 1500, 50));
     
     params.push_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID { "smoothing",  1 }, "Enable Smoothing", true));
@@ -262,6 +267,10 @@ void RMSCompressorAudioProcessor::parameterChanged(const juce::String& parameter
     if (parameterID.equalsIgnoreCase("ratio")){
         auto ratioIndex = newValue;
         compressor.setRatio(ratioValues[ratioIndex]);
+    }
+    if (parameterID.equalsIgnoreCase("makeupGain")){
+        makeupGainValue = newValue;
+        compressor.setMakeupGain(makeupGainValue);
     }
 }
 
