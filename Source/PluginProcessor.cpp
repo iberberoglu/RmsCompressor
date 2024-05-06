@@ -24,6 +24,7 @@ RMSCompressorAudioProcessor::RMSCompressorAudioProcessor()
     parameters.addParameterListener("releaseTime", this);
     parameters.addParameterListener("ratio", this);
     parameters.addParameterListener("makeupGain", this);
+    parameters.addParameterListener("bypassButton", this);
 }
 
 RMSCompressorAudioProcessor::~RMSCompressorAudioProcessor()
@@ -35,6 +36,7 @@ RMSCompressorAudioProcessor::~RMSCompressorAudioProcessor()
     parameters.removeParameterListener("releaseTime", this);
     parameters.removeParameterListener("ratio", this);
     parameters.removeParameterListener("makeupGain", this);
+    parameters.removeParameterListener("bypassButton", this);
 }
 
 //==============================================================================
@@ -232,7 +234,9 @@ juce::AudioProcessorValueTreeState::ParameterLayout RMSCompressorAudioProcessor:
     
     params.push_back(std::make_unique<juce::AudioParameterInt>(juce::ParameterID { "rmsPeriod",  1 }, "Period", 1, 1500, 50));
     
-    params.push_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID { "smoothing",  1 }, "Enable Smoothing", true));
+    params.push_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID { "smoothing",  1 }, "Enable Smoothing", false));
+    
+    params.push_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID { "bypassButton",  1 }, "Bypass", false));
     
     auto choices = std::vector<float>{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 15.0, 20.0, 50.0, 100.0};
     juce::StringArray sa;
@@ -271,6 +275,10 @@ void RMSCompressorAudioProcessor::parameterChanged(const juce::String& parameter
     if (parameterID.equalsIgnoreCase("makeupGain")){
         makeupGainValue = newValue;
         compressor.setMakeupGain(makeupGainValue);
+    }
+    if (parameterID.equalsIgnoreCase("bypassButton")){
+        bypassValue = newValue;
+        compressor.setBypass(bypassValue);
     }
 }
 

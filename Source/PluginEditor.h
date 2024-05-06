@@ -51,6 +51,8 @@ private:
     juce::Slider makeupGainSlider;
     juce::Label makeupGainLabel;
     juce::AudioProcessorValueTreeState::SliderAttachment makeupGainAttachment;
+    juce::ToggleButton bypassToggle;
+    juce::AudioProcessorValueTreeState::ButtonAttachment bypassToggleAttachment;
     
     juce::Label rmsLevelHeading1, rmsLevelHeading2;
     juce::Label currentRmsLabel, maxRmsLabel;

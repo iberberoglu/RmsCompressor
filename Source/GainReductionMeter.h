@@ -63,6 +63,7 @@ public:
     }
 
     void drawNeedle(juce::Graphics& g, juce::Point<float> centre, float radius, float value) {
+        
         float angle;
         if (value <= 20.0f) {
             angle = juce::jmap(value, 0.0f, 20.0f, startAngle, juce::MathConstants<float>::pi * 2.0f);
@@ -82,6 +83,7 @@ public:
     }
 
 private:
+    
     float gainReductionDb;
     float smoothedGainReductionDb;
     static constexpr float maxGainReductionLow = 20.0f;

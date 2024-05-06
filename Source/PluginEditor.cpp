@@ -18,7 +18,8 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     attackTimeAttachment(p.getApvts(), "attackTime", attackTimeSlider),
     releaseTimeAttachment(p.getApvts(), "releaseTime", releaseTimeSlider),
     ratioAttachment(p.getApvts(), "ratio", ratioSlider),
-    makeupGainAttachment(p.getApvts(), "makeupGain", makeupGainSlider)
+    makeupGainAttachment(p.getApvts(), "makeupGain", makeupGainSlider),
+    bypassToggleAttachment(p.getApvts(), "bypassButton", bypassToggle)
 {
     
     addAndMakeVisible(gainReductionMeter);
@@ -45,6 +46,7 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     addAndMakeVisible(releaseTimeLabel);
     addAndMakeVisible(ratioLabel);
     addAndMakeVisible(makeupGainLabel);
+    addAndMakeVisible(bypassToggle);
     
     thresholdSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     thresholdSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
@@ -84,6 +86,8 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     makeupGainLabel.setText("Make Up", juce::dontSendNotification);
     makeupGainLabel.setFont(juce::Font{}.withStyle(juce::Font::FontStyleFlags::bold));
     makeupGainLabel.setJustificationType(juce::Justification::centred);
+    
+    bypassToggle.setButtonText("Bypass");
 
     rmsLevelHeading1.setText("dBFS", juce::dontSendNotification);
     rmsLevelHeading1.setFont(juce::Font{}.withStyle(juce::Font::FontStyleFlags::bold));
@@ -100,7 +104,8 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     rmsPeriodSlider.setTextValueSuffix(" ms");
     
     getLookAndFeel().setColour(juce::Slider::thumbColourId, juce::Colours::darkturquoise);
-   // getLookAndFeel().setColour(juce::Slider::rotarySliderOutlineColourId, juce::Colours::white);
+    getLookAndFeel().setColour(juce::Slider::rotarySliderFillColourId, juce::Colours::silver);
+    getLookAndFeel().setColour(juce::Slider::rotarySliderOutlineColourId, juce::Colours::grey);
 
     enableSmoothingButton.setButtonText("Enable smoothing");
 
@@ -184,6 +189,8 @@ void RMSCompressorAudioProcessorEditor::resized()
     rmsPeriodLabel.setBounds(controlBounds.removeFromTop(labelHeight));
     rmsPeriodSlider.setBounds(controlBounds.removeFromTop(labelHeight));
     enableSmoothingButton.setBounds(controlBounds);
+    
+    bypassToggle.setBounds(0, getHeight() / 4, getWidth() / 4, getHeight() / 8);
     
     thresholdSlider.setBounds(0, getHeight() / 1.5, getWidth() / 4, getHeight() / 4);
     thresholdLabel.setBounds(getWidth() / 16, getHeight() / 1.14 , getWidth() / 8 , getHeight() / 8);
