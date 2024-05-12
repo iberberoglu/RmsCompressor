@@ -19,7 +19,10 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     releaseTimeAttachment(p.getApvts(), "releaseTime", releaseTimeSlider),
     ratioAttachment(p.getApvts(), "ratio", ratioSlider),
     makeupGainAttachment(p.getApvts(), "makeupGain", makeupGainSlider),
-    bypassToggleAttachment(p.getApvts(), "bypassButton", bypassToggle)
+    bypassToggleAttachment(p.getApvts(), "bypassButton", bypassToggle),
+    peakButtonAttachment(p.getApvts(), "peakButton", peakButton),
+    rmsButtonAttachment(p.getApvts(), "rmsButton", rmsButton),
+    variableSizedRmsButtonAttachment(p.getApvts(), "variableSizedRmsButton", variableSizedRmsButton)
 {
     
     addAndMakeVisible(gainReductionMeter);
@@ -46,7 +49,14 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     addAndMakeVisible(releaseTimeLabel);
     addAndMakeVisible(ratioLabel);
     addAndMakeVisible(makeupGainLabel);
+    
     addAndMakeVisible(bypassToggle);
+    
+    addAndMakeVisible(peakButton);
+    
+    addAndMakeVisible(rmsButton);
+    
+    addAndMakeVisible(variableSizedRmsButton);
     
     thresholdSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     thresholdSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
@@ -88,6 +98,16 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     makeupGainLabel.setJustificationType(juce::Justification::centred);
     
     bypassToggle.setButtonText("Bypass");
+    
+    peakButton.setButtonText("Peak");
+    
+    rmsButton.setButtonText("RMS");
+    
+    variableSizedRmsButton.setButtonText("Variable Sized RMS (experimental)");
+    
+    peakButton.setRadioGroupId(1);
+    rmsButton.setRadioGroupId(1);
+    variableSizedRmsButton.setRadioGroupId(1);
 
     rmsLevelHeading1.setText("dBFS", juce::dontSendNotification);
     rmsLevelHeading1.setFont(juce::Font{}.withStyle(juce::Font::FontStyleFlags::bold));
@@ -190,7 +210,13 @@ void RMSCompressorAudioProcessorEditor::resized()
     rmsPeriodSlider.setBounds(controlBounds.removeFromTop(labelHeight));
     enableSmoothingButton.setBounds(controlBounds);
     
-    bypassToggle.setBounds(0, getHeight() / 4, getWidth() / 4, getHeight() / 8);
+    bypassToggle.setBounds(0, getHeight() / 8, getWidth() / 4, getHeight() / 8);
+    
+    peakButton.setBounds(0, getHeight() / 3, getWidth() / 4, getHeight() / 8);
+    
+    rmsButton.setBounds(0, getHeight() / 3 + 50, getWidth() / 4, getHeight() / 8);
+    
+    variableSizedRmsButton.setBounds(0, getHeight() / 3 + 100, getWidth() / 4, getHeight() / 8);
     
     thresholdSlider.setBounds(0, getHeight() / 1.5, getWidth() / 4, getHeight() / 4);
     thresholdLabel.setBounds(getWidth() / 16, getHeight() / 1.14 , getWidth() / 8 , getHeight() / 8);

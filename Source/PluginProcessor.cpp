@@ -25,6 +25,10 @@ RMSCompressorAudioProcessor::RMSCompressorAudioProcessor()
     parameters.addParameterListener("ratio", this);
     parameters.addParameterListener("makeupGain", this);
     parameters.addParameterListener("bypassButton", this);
+    parameters.addParameterListener("peakButton", this);
+    parameters.addParameterListener("rmsButton", this);
+    parameters.addParameterListener("variableSizedRmsButton", this);
+    
 }
 
 RMSCompressorAudioProcessor::~RMSCompressorAudioProcessor()
@@ -37,6 +41,9 @@ RMSCompressorAudioProcessor::~RMSCompressorAudioProcessor()
     parameters.removeParameterListener("ratio", this);
     parameters.removeParameterListener("makeupGain", this);
     parameters.removeParameterListener("bypassButton", this);
+    parameters.removeParameterListener("peakButton", this);
+    parameters.removeParameterListener("rmsButton", this);
+    parameters.removeParameterListener("variableSizedRmsButton", this);
 }
 
 //==============================================================================
@@ -115,9 +122,9 @@ void RMSCompressorAudioProcessor::prepareToPlay (double sr, int samplesPerBlock)
         rmsLevels.emplace_back(std::move(rms));
     }
 
-    rmsFifo.reset(numberOfChannels, (static_cast<int>(sampleRate) * 2) + 1);
+    rmsFifo.reset(numberOfChannels, (static_cast<int>(sampleRate) * 10) + 1);
     rmsCalculationBuffer.clear();
-    rmsCalculationBuffer.setSize(numberOfChannels, (static_cast<int>(sampleRate) * 2) + 1);
+    rmsCalculationBuffer.setSize(numberOfChannels, (static_cast<int>(sampleRate) * 10) + 1);
 
     rmsWindowSize =  static_cast<int> (sampleRate * parameters.getRawParameterValue("rmsPeriod")->load()) / 1000;
     isSmoothed = static_cast<bool> (parameters.getRawParameterValue("smoothing")->load());
@@ -135,6 +142,8 @@ void RMSCompressorAudioProcessor::prepareToPlay (double sr, int samplesPerBlock)
     compressor.prepare(spec);
     compressor.setThreshold(thresholdValue);
     compressor.setRatio(ratioValue);
+    compressor.setAttack(attackTimeValue);
+    compressor.setRelease(releaseTimeValue);
     
 }
 
@@ -179,6 +188,13 @@ void RMSCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer
     for (auto& rmsLevel : rmsLevels)
         rmsLevel.skip(numSamples);
     
+    std::vector<float> normalRmsLevels;
+    
+    for(int channel = 0; channel < buffer.getNumChannels(); channel++)
+    {
+        normalRmsLevels.push_back(buffer.getRMSLevel(channel, 0, numSamples));
+    }
+    
     rmsFifo.push(buffer);
     
     auto rmsLevels = getRmsLevels(); // RMS seviyelerini al
@@ -186,7 +202,7 @@ void RMSCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer
     auto block = juce::dsp::AudioBlock<float>(buffer);
     auto context = juce::dsp::ProcessContextReplacing<float>(block);
     
-    compressor.process(context, rmsLevels);
+    compressor.process(context, rmsLevels, normalRmsLevels);
 
 }
 
@@ -232,11 +248,17 @@ juce::AudioProcessorValueTreeState::ParameterLayout RMSCompressorAudioProcessor:
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "makeupGain", 1}, "MakeupGain", juce::NormalisableRange<float>(-20.0f, 20.0f, 0.1f), 0.0f));
     
-    params.push_back(std::make_unique<juce::AudioParameterInt>(juce::ParameterID { "rmsPeriod",  1 }, "Period", 1, 1500, 50));
+    params.push_back(std::make_unique<juce::AudioParameterInt>(juce::ParameterID { "rmsPeriod",  1 }, "Period", 1, 9000, 50));
     
     params.push_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID { "smoothing",  1 }, "Enable Smoothing", false));
     
     params.push_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID { "bypassButton",  1 }, "Bypass", false));
+    
+    params.push_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID { "peakButton",  1 }, "Peak Button", false));
+    
+    params.push_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID { "rmsButton",  1 }, "RMS Button", true));
+    
+    params.push_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID { "variableSizedRmsButton",  1 }, "Variable Sized RMS Button", false));
     
     auto choices = std::vector<float>{1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 15.0, 20.0, 50.0, 100.0};
     juce::StringArray sa;
@@ -279,6 +301,15 @@ void RMSCompressorAudioProcessor::parameterChanged(const juce::String& parameter
     if (parameterID.equalsIgnoreCase("bypassButton")){
         bypassValue = newValue;
         compressor.setBypass(bypassValue);
+    }
+    if (parameterID.equalsIgnoreCase("peakButton")){
+        compressor.setPeakType(newValue);
+    }
+    if (parameterID.equalsIgnoreCase("rmsButton")){
+        compressor.setRmsType(newValue);
+    }
+    if (parameterID.equalsIgnoreCase("variableSizedRmsButton")){
+        compressor.setVariableSizedRmsType(newValue);
     }
 }
 

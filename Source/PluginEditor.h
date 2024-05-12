@@ -54,6 +54,15 @@ private:
     juce::ToggleButton bypassToggle;
     juce::AudioProcessorValueTreeState::ButtonAttachment bypassToggleAttachment;
     
+    juce::ToggleButton peakButton;
+    juce::AudioProcessorValueTreeState::ButtonAttachment peakButtonAttachment;
+    
+    juce::ToggleButton rmsButton;
+    juce::AudioProcessorValueTreeState::ButtonAttachment rmsButtonAttachment;
+    
+    juce::ToggleButton variableSizedRmsButton;
+    juce::AudioProcessorValueTreeState::ButtonAttachment variableSizedRmsButtonAttachment;
+    
     juce::Label rmsLevelHeading1, rmsLevelHeading2;
     juce::Label currentRmsLabel, maxRmsLabel;
     juce::Label currentRmsValue, maxRmsValue;
