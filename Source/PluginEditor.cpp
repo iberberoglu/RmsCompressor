@@ -70,6 +70,7 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     attackTimeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
     attackTimeSlider.setTextValueSuffix(" ms");
     
+    
     attackTimeLabel.setText("Attack", juce::dontSendNotification);
     attackTimeLabel.setFont(juce::Font{}.withStyle(juce::Font::FontStyleFlags::bold));
     attackTimeLabel.setJustificationType(juce::Justification::centred);
@@ -77,6 +78,7 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     releaseTimeSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     releaseTimeSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
     releaseTimeSlider.setTextValueSuffix(" ms");
+
     
     releaseTimeLabel.setText("Release", juce::dontSendNotification);
     releaseTimeLabel.setFont(juce::Font{}.withStyle(juce::Font::FontStyleFlags::bold));
@@ -91,6 +93,7 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     
     makeupGainSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     makeupGainSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
+    
     makeupGainSlider.setTextValueSuffix(" dB");
     
     makeupGainLabel.setText("Make Up", juce::dontSendNotification);
@@ -101,7 +104,7 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     
     peakButton.setButtonText("Peak");
     
-    rmsButton.setButtonText("RMS");
+    rmsButton.setButtonText("Fixed RMS");
     
     variableSizedRmsButton.setButtonText("Variable Sized RMS (experimental)");
     

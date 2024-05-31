@@ -122,9 +122,9 @@ void RMSCompressorAudioProcessor::prepareToPlay (double sr, int samplesPerBlock)
         rmsLevels.emplace_back(std::move(rms));
     }
 
-    rmsFifo.reset(numberOfChannels, (static_cast<int>(sampleRate) * 10) + 1);
+    rmsFifo.reset(numberOfChannels, (static_cast<int>(sampleRate) * 2) + 1);
     rmsCalculationBuffer.clear();
-    rmsCalculationBuffer.setSize(numberOfChannels, (static_cast<int>(sampleRate) * 10) + 1);
+    rmsCalculationBuffer.setSize(numberOfChannels, (static_cast<int>(sampleRate) * 2) + 1);
 
     rmsWindowSize =  static_cast<int> (sampleRate * parameters.getRawParameterValue("rmsPeriod")->load()) / 1000;
     isSmoothed = static_cast<bool> (parameters.getRawParameterValue("smoothing")->load());
@@ -248,7 +248,11 @@ juce::AudioProcessorValueTreeState::ParameterLayout RMSCompressorAudioProcessor:
     
     params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "makeupGain", 1}, "MakeupGain", juce::NormalisableRange<float>(-20.0f, 20.0f, 0.1f), 0.0f));
     
-    params.push_back(std::make_unique<juce::AudioParameterInt>(juce::ParameterID { "rmsPeriod",  1 }, "Period", 1, 9000, 50));
+    auto rmsRange = juce::NormalisableRange<float>(1.0f, 1000.0f, 1.0f);
+            
+    rmsRange.setSkewForCentre(250.0f);
+    
+    params.push_back(std::make_unique<juce::AudioParameterFloat>(juce::ParameterID { "rmsPeriod",  1 }, "Period", rmsRange, 50.0));
     
     params.push_back(std::make_unique<juce::AudioParameterBool>(juce::ParameterID { "smoothing",  1 }, "Enable Smoothing", false));
     
