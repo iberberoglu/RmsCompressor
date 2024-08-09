@@ -10,7 +10,7 @@
 
 #include <JuceHeader.h>
 #include "Fifo.h"
-//#include "Compressor.h"
+//#include "juce_Compressor.h"
 
 //==============================================================================
 /**
@@ -62,6 +62,8 @@ public:
     std::vector<float> getRmsLevels();
     float getRmsLevel(const int channel);
     
+//    void getBPM();
+    
     juce::AudioProcessorValueTreeState parameters;
     
     //float gainReductionDb;
@@ -69,6 +71,9 @@ public:
     juce::dsp::Compressor<float> compressor;
     
     bool bypassValue = false;
+    bool peakValue = false;
+    bool rmsValue = true;
+    
 private:
     
     std::vector<double> rmsBuffer;
@@ -90,6 +95,8 @@ private:
     float ratioValue = 3.0f;
     float makeupGainValue = 0.0f;
     
+    float attackCoefficientValue = -0.1;
+    float releaseCoefficientValue = -0.4;
     
     std::vector<float> ratioValues {1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0, 8.0, 9.0, 10.0, 15.0, 20.0, 50.0, 100.0};
     int rmsWindowSize = 50;

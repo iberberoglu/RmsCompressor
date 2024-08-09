@@ -53,11 +53,25 @@ private:
     juce::AudioProcessorValueTreeState::SliderAttachment makeupGainAttachment;
     juce::ToggleButton bypassToggle;
     juce::AudioProcessorValueTreeState::ButtonAttachment bypassToggleAttachment;
+    juce::ToggleButton peakToggle;
+    juce::AudioProcessorValueTreeState::ButtonAttachment peakToggleAttachment;
+    juce::ToggleButton rmsToggle;
+    juce::AudioProcessorValueTreeState::ButtonAttachment rmsToggleAttachment;
+    
+    juce::Slider attackCoefficientSlider;
+    juce::AudioProcessorValueTreeState::SliderAttachment attackCoefficientAttachment;
+    juce::Label attackCoefficientLabel;
+    juce::Slider releaseCoefficientSlider;
+    juce::AudioProcessorValueTreeState::SliderAttachment releaseCoefficientAttachment;
+    juce::Label releaseCoefficientLabel;
     
     juce::Label rmsLevelHeading1, rmsLevelHeading2;
     juce::Label currentRmsLabel, maxRmsLabel;
     juce::Label currentRmsValue, maxRmsValue;
     juce::Label rmsPeriodLabel;
+    
+    juce::Label egeMolLabel;
+    
     float maxRmsLeft{}, maxRmsRight{};
     int framesElapsed = 0;
     

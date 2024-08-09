@@ -19,7 +19,11 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     releaseTimeAttachment(p.getApvts(), "releaseTime", releaseTimeSlider),
     ratioAttachment(p.getApvts(), "ratio", ratioSlider),
     makeupGainAttachment(p.getApvts(), "makeupGain", makeupGainSlider),
-    bypassToggleAttachment(p.getApvts(), "bypassButton", bypassToggle)
+    bypassToggleAttachment(p.getApvts(), "bypassButton", bypassToggle),
+    peakToggleAttachment(p.getApvts(), "peakButton", peakToggle),
+    rmsToggleAttachment(p.getApvts(), "rmsButton", rmsToggle),
+    attackCoefficientAttachment(p.getApvts(), "attackCoefficient", attackCoefficientSlider),
+    releaseCoefficientAttachment(p.getApvts(), "releaseCoefficient", releaseCoefficientSlider)
 {
     
     addAndMakeVisible(gainReductionMeter);
@@ -47,6 +51,32 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     addAndMakeVisible(ratioLabel);
     addAndMakeVisible(makeupGainLabel);
     addAndMakeVisible(bypassToggle);
+    addAndMakeVisible(peakToggle);
+    addAndMakeVisible(rmsToggle);
+    
+    addAndMakeVisible(egeMolLabel);
+    
+    addAndMakeVisible(attackCoefficientSlider);
+    addAndMakeVisible(releaseCoefficientSlider);
+    addAndMakeVisible(attackCoefficientLabel);
+    addAndMakeVisible(releaseCoefficientLabel);
+    
+    attackCoefficientLabel.setText("Attack Coefficient", juce::dontSendNotification);
+    attackCoefficientLabel.setFont(juce::Font{}.withHeight(12.0f).withStyle(juce::Font::FontStyleFlags::bold));
+    attackCoefficientLabel.setJustificationType(juce::Justification::centred);
+    
+    releaseCoefficientLabel.setText("Release Coefficient", juce::dontSendNotification);
+    releaseCoefficientLabel.setFont(juce::Font{}.withHeight(12.0f).withStyle(juce::Font::FontStyleFlags::bold));
+    releaseCoefficientLabel.setJustificationType(juce::Justification::centred);
+    
+    rmsToggle.setRadioGroupId(1);
+    peakToggle.setRadioGroupId(1);
+    
+    attackCoefficientSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    attackCoefficientSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 75, 15);
+    
+    releaseCoefficientSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
+    releaseCoefficientSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 75, 15);
     
     thresholdSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     thresholdSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
@@ -72,6 +102,12 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     releaseTimeLabel.setFont(juce::Font{}.withStyle(juce::Font::FontStyleFlags::bold));
     releaseTimeLabel.setJustificationType(juce::Justification::centred);
     
+    egeMolLabel.setText("- Ege Mol Special Edition -", juce::dontSendNotification);
+    egeMolLabel.setFont(juce::Font(12.0).withStyle(juce::Font::FontStyleFlags::italic));
+    egeMolLabel.setJustificationType(juce::Justification::centred);
+    egeMolLabel.setColour(juce::Label::textColourId, juce::Colours::magenta);
+    
+    
     ratioSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     ratioSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
     
@@ -88,6 +124,8 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     makeupGainLabel.setJustificationType(juce::Justification::centred);
     
     bypassToggle.setButtonText("Bypass");
+    peakToggle.setButtonText("Peak");
+    rmsToggle.setButtonText("RMS");
 
     rmsLevelHeading1.setText("dBFS", juce::dontSendNotification);
     rmsLevelHeading1.setFont(juce::Font{}.withStyle(juce::Font::FontStyleFlags::bold));
@@ -190,7 +228,10 @@ void RMSCompressorAudioProcessorEditor::resized()
     rmsPeriodSlider.setBounds(controlBounds.removeFromTop(labelHeight));
     enableSmoothingButton.setBounds(controlBounds);
     
-    bypassToggle.setBounds(0, getHeight() / 4, getWidth() / 4, getHeight() / 8);
+    bypassToggle.setBounds(0, getHeight() / 10, getWidth() / 4, getHeight() / 8);
+    
+    peakToggle.setBounds(0, getHeight() / 2, getWidth() / 4, 25);
+    rmsToggle.setBounds(0, getHeight() / 2 - 25, getWidth() / 4, 25);
     
     thresholdSlider.setBounds(0, getHeight() / 1.5, getWidth() / 4, getHeight() / 4);
     thresholdLabel.setBounds(getWidth() / 16, getHeight() / 1.14 , getWidth() / 8 , getHeight() / 8);
@@ -208,5 +249,15 @@ void RMSCompressorAudioProcessorEditor::resized()
     makeupGainLabel.setBounds(getWidth() / 1.2307692, getHeight() / 1.84 ,getWidth() / 8, getHeight() / 8);
     
     gainReductionMeter.setBounds((getWidth() / 2) - (getWidth() / 2) / 2, getHeight() / 5, getWidth() / 2, getHeight() / 2);
+    
+    attackCoefficientSlider.setBounds(getWidth() / 40 , getHeight() / 5, getWidth() / 8, getHeight() / 8);
+    
+    releaseCoefficientSlider.setBounds(getWidth() / 40 + getWidth() / 8 + 15, getHeight() / 5, getWidth() / 8, getHeight() / 8);
+    
+    attackCoefficientLabel.setBounds(getWidth() / 40 , getHeight() / 5 + 55, getWidth() / 8, getHeight() / 8);
+    
+    releaseCoefficientLabel.setBounds(getWidth() / 40 + getWidth() / 8 + 15, getHeight() / 5 + 55, getWidth() / 8, getHeight() / 8);
+
+    egeMolLabel.setBounds(getWidth() / 2 - 60, getHeight() - 60, 120, 100);
 
 }

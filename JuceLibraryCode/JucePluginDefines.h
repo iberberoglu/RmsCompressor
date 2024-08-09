@@ -41,7 +41,7 @@
  #define JucePlugin_Enable_ARA             0
 #endif
 #ifndef  JucePlugin_Name
- #define JucePlugin_Name                   "RMSCompressor"
+ #define JucePlugin_Name                   "RMSCompressor_EgeMol_Edition"
 #endif
 #ifndef  JucePlugin_Desc
  #define JucePlugin_Desc                   "RMSCompressor"
@@ -137,7 +137,7 @@
  #define JucePlugin_IAASubType             JucePlugin_PluginCode
 #endif
 #ifndef  JucePlugin_IAAName
- #define JucePlugin_IAAName                "ismailberberoglu: RMSCompressor"
+ #define JucePlugin_IAAName                "ismailberberoglu: RMSCompressor_EgeMol_Edition"
 #endif
 #ifndef  JucePlugin_VSTNumMidiInputs
  #define JucePlugin_VSTNumMidiInputs       16
