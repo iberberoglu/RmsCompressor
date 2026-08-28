@@ -11,3 +11,7 @@ Builds/VisualStudio2022/*.user
 # Xcode kullanıcıya özel durum dosyaları
 **/xcuserdata/
 **/*.xcuserstate
+
+# Okul sunumu / rapor dosyaları — depo dışında tutulur (rapor, .key, .pages, demo Live seti)
+Serbest Proje Çalışması*/
+_git_yedek_*/
