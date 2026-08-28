@@ -47,19 +47,19 @@
  #define JucePlugin_Desc                   "RMSCompressor"
 #endif
 #ifndef  JucePlugin_Manufacturer
- #define JucePlugin_Manufacturer           "ismailberberoglu"
+ #define JucePlugin_Manufacturer           "Ismail Berberoglu"
 #endif
 #ifndef  JucePlugin_ManufacturerWebsite
- #define JucePlugin_ManufacturerWebsite    "www.ismailberberoglu.com"
+ #define JucePlugin_ManufacturerWebsite    "https://github.com/iberberoglu/RmsCompressor"
 #endif
 #ifndef  JucePlugin_ManufacturerEmail
  #define JucePlugin_ManufacturerEmail      ""
 #endif
 #ifndef  JucePlugin_ManufacturerCode
- #define JucePlugin_ManufacturerCode       0x4d616e75
+ #define JucePlugin_ManufacturerCode       0x49627262
 #endif
 #ifndef  JucePlugin_PluginCode
- #define JucePlugin_PluginCode             0x56666e63
+ #define JucePlugin_PluginCode             0x526d7343
 #endif
 #ifndef  JucePlugin_IsSynth
  #define JucePlugin_IsSynth                0
@@ -137,7 +137,7 @@
  #define JucePlugin_IAASubType             JucePlugin_PluginCode
 #endif
 #ifndef  JucePlugin_IAAName
- #define JucePlugin_IAAName                "ismailberberoglu: RMSCompressor"
+ #define JucePlugin_IAAName                "Ismail Berberoglu: RMSCompressor"
 #endif
 #ifndef  JucePlugin_VSTNumMidiInputs
  #define JucePlugin_VSTNumMidiInputs       16

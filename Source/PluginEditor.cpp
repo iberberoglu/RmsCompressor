@@ -1,4 +1,4 @@
-/* editor .cpp
+/*
   ==============================================================================
 
     This file contains the basic framework code for a JUCE plugin editor.
@@ -144,9 +144,9 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     setResizable(true, true);
     setResizeLimits(500, 500, 1000, 1000);
 
-    // Kare oranı burada zorlanıyor. Daha önce resized() içinde setSize()
-    // çağrılarak yapılıyordu; o çağrı resized()'ı yeniden tetiklediği için
-    // döngüye açıktı.
+    // The square aspect ratio is enforced here. It used to be done by calling
+    // setSize() from inside resized(), which re-entered resized() and was one
+    // condition away from looping.
     if (auto* constrainer = getConstrainer())
         constrainer->setFixedAspectRatio(1.0);
     startTimerHz(24);
@@ -159,10 +159,8 @@ RMSCompressorAudioProcessorEditor::~RMSCompressorAudioProcessorEditor()
 
 void RMSCompressorAudioProcessorEditor::timerCallback()
 {
-    // Gain reduction değerini al
     float currentGainReduction = audioProcessor.compressor.gainReductionFunc();
 
-    // Metre güncelle
     gainReductionMeter.setGainReductionDb(currentGainReduction);
     
     if (++framesElapsed > 100)
@@ -172,7 +170,8 @@ void RMSCompressorAudioProcessorEditor::timerCallback()
         maxRmsRight = -100.f;
     }
 
-    // Mono bus'a izin veriliyor; o durumda ikinci kanal yok, sol kanalı tekrarla.
+    // Mono buses are supported, and there is no second channel on those, so
+    // fall back to repeating the left one.
     const auto numRmsChannels = audioProcessor.getNumRmsChannels();
     const auto leftGain = numRmsChannels > 0 ? audioProcessor.getRmsLevel(0) : -100.0f;
     const auto rightGain = numRmsChannels > 1 ? audioProcessor.getRmsLevel(1) : leftGain;

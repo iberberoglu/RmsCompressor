@@ -61,7 +61,7 @@ public:
     std::vector<float> getRmsLevels();
     float getRmsLevel(const int channel);
 
-    /** getRmsLevel() ile güvenle sorgulanabilecek kanal sayısı. */
+    /** How many channels getRmsLevel() can safely be asked for. */
     int getNumRmsChannels() const { return rmsCalculationBuffer.getNumChannels(); }
 
     juce::AudioProcessorValueTreeState parameters;

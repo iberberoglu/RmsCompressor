@@ -1,4 +1,4 @@
-/* pluginproceessor.cpp
+/*
   ==============================================================================
 
     This file contains the basic framework code for a JUCE plugin processor.
@@ -157,9 +157,9 @@ void RMSCompressorAudioProcessor::prepareToPlay (double sr, int samplesPerBlock)
 
 }
 
-// "ratio" parametresi bir AudioParameterChoice; taşıdığı değer ratio'nun
-// kendisi değil, ratioValues içindeki indeksi. Doğrudan setRatio'ya
-// verilirse indeks 0 (ratio 1.0) sıfıra bölmeye yol açar.
+// The "ratio" parameter is an AudioParameterChoice, so the value it carries is
+// an index into ratioValues rather than the ratio itself. Passing it straight to
+// setRatio() would make index 0 (ratio 1.0) divide by zero.
 float RMSCompressorAudioProcessor::ratioFromIndex(float rawIndex) const
 {
     const auto lastIndex = static_cast<int> (ratioValues.size()) - 1;
@@ -210,9 +210,9 @@ void RMSCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer
 
     rmsFifo.push(buffer);
 
-    // Üye rmsLevels bir LinearSmoothedValue vektörü; buradaki ise o
-    // yumuşatıcılardan okunan anlık dB değerleri. Aynı adı kullanmak üyeyi
-    // gölgeliyordu, bu yüzden ayrı adlandırıldı.
+    // The rmsLevels member is a vector of LinearSmoothedValue; these are the
+    // current dB readings taken from those smoothers. Reusing the name shadowed
+    // the member, hence the separate one.
     const auto currentRmsLevels = getRmsLevels();
 
     auto block = juce::dsp::AudioBlock<float>(buffer);
@@ -252,7 +252,6 @@ void RMSCompressorAudioProcessor::setStateInformation (const void* data, int siz
 
 juce::AudioProcessorValueTreeState::ParameterLayout RMSCompressorAudioProcessor::createParameters()
 {
-    // PARAMETRELERIN YARATILDIĞI YER
     
     std::vector<std::unique_ptr<juce::RangedAudioParameter>> params;
     
@@ -302,15 +301,15 @@ void RMSCompressorAudioProcessor::parameterChanged(const juce::String& parameter
     if (parameterID.equalsIgnoreCase("smoothing"))
         isSmoothed = static_cast<bool> (newValue);
     if (parameterID.equalsIgnoreCase("threshold")){
-        thresholdValue = newValue;  // Değişkeni güncelle
+        thresholdValue = newValue;
         compressor.setThreshold(newValue);
     }
     if (parameterID.equalsIgnoreCase("attackTime")){
-        attackTimeValue = newValue;  // Değişkeni güncelle
+        attackTimeValue = newValue;
         compressor.setAttack(newValue);
     }
     if (parameterID.equalsIgnoreCase("releaseTime")){
-        releaseTimeValue = newValue;  // Değişkeni güncelle
+        releaseTimeValue = newValue;
         compressor.setRelease(newValue);
     }
     if (parameterID.equalsIgnoreCase("ratio")){

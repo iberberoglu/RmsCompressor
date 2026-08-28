@@ -92,8 +92,8 @@ public:
 
                 const auto outputDB = juce::Decibels::gainToDecibels(std::abs(outputSamples[i]));
 
-                // Arayüz thread'i bunu okuyor; atomic olmadan veri yarışı olurdu.
-                // Metre için sıralama garantisi gerekmediğinden relaxed yeterli.
+                // The UI thread reads this, so it would be a data race as a plain
+                // float. The meter needs no ordering guarantees, so relaxed is enough.
                 gainReductionDb.store(static_cast<float> (inputDB - outputDB), std::memory_order_relaxed);
 
                 outputSamples[i] *= juce::Decibels::decibelsToGain(makeupGainValue);
@@ -104,7 +104,7 @@ public:
     /** Performs the processing operation on a single sample at a time. */
     SampleType processSample (int channel, SampleType inputValue, const std::vector<float>& rmsLevels, bool peak, bool rms, double attackCoef, double releaseCoef);
     
-    /** Arayüzden (audio thread dışından) güvenle çağrılabilir. */
+    /** Safe to call from the UI thread, away from the audio thread. */
     float gainReductionFunc() const
     {
         return gainReductionDb.load(std::memory_order_relaxed);

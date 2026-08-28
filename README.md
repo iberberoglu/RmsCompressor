@@ -231,6 +231,10 @@ Xcode's plug-in copy step installs the built component into
 `~/Library/Audio/Plug-Ins/Components/` on every Release build, so restart your
 DAW to pick up the new version.
 
+Visual Studio 2022 project files are in `Builds/VisualStudio2022/` and point at
+the same vendored modules, but I have only ever built and tested this on macOS,
+so treat the Windows target as untried.
+
 ---
 
 ## Repository layout

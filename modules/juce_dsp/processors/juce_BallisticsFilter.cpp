@@ -97,8 +97,8 @@ SampleType BallisticsFilter<SampleType>::processSample (int channel, SampleType 
     cteAT = calculateLimitedCte (static_cast<SampleType> (attackTime), expFactorAttack);
     cteRL = calculateLimitedCte (static_cast<SampleType> (releaseTime), expFactorRelease);
 
-    // RMS modu: zarf, pencerelenmiş RMS'in karesini takip eder; sonuçta karekök
-    // alınarak lineer genliğe dönülür.
+    // RMS mode: the envelope follows the square of the windowed RMS, and the
+    // square root at the end brings it back to linear amplitude.
     if (rms)
     {
         rmsLevel *= rmsLevel;
@@ -111,7 +111,7 @@ SampleType BallisticsFilter<SampleType>::processSample (int channel, SampleType 
         return std::sqrt (result);
     }
 
-    // Peak modu: zarf, örneğin mutlak değerini takip eder.
+    // Peak mode: the envelope follows the magnitude of the sample.
     if (peak)
     {
         inputValue = std::abs (inputValue);
@@ -124,9 +124,9 @@ SampleType BallisticsFilter<SampleType>::processSample (int channel, SampleType 
         return result;
     }
 
-    // Arayüzdeki radio grubu ikisinden birinin daima seçili olmasını sağlıyor;
-    // buraya düşmek bir programlama hatası demek. Değer döndürmeden çıkmak
-    // tanımsız davranış olurdu, o yüzden girişi olduğu gibi geri ver.
+    // The radio group in the editor keeps one of the two selected at all times,
+    // so reaching this point means a programming error. Falling off the end of
+    // the function would be undefined behaviour, so return the input untouched.
     jassertfalse;
     return inputValue;
 }

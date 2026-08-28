@@ -18,9 +18,9 @@ public:
     }
 
     void drawScale(juce::Graphics& g, juce::Point<float> centre, float radius) {
-        const int numMarks = 10; // İşaret sayısı
-        const float startAngle = juce::MathConstants<float>::pi * 1.1667f; // Başlangıç açısı, saat 7 yönü (210 derece)
-        const float endAngle = juce::MathConstants<float>::pi * 2.8333f; // Bitiş açısı, saat 5 yönü (150 derece)
+        const int numMarks = 10;
+        const float startAngle = juce::MathConstants<float>::pi * 1.1667f; // 7 o'clock (210 degrees)
+        const float endAngle = juce::MathConstants<float>::pi * 2.8333f; // 5 o'clock (150 degrees)
         std::array<int, numMarks> marks = {0, -5, -10, -15, -20, -30, -40, -50, -60, -80};
 
         for (int i = 0; i < numMarks; ++i) {
@@ -89,6 +89,6 @@ private:
     static constexpr float maxGainReductionLow = 20.0f;
     static constexpr float maxGainReduction = 80.0f;
     static constexpr float smoothingFactor = 0.1f;
-    float startAngle = juce::MathConstants<float>::pi * 1.1667f; // Saat 7 yönü
-    float endAngle = juce::MathConstants<float>::pi * 2.8333f; // Saat 5 yönü
+    float startAngle = juce::MathConstants<float>::pi * 1.1667f; // 7 o'clock
+    float endAngle = juce::MathConstants<float>::pi * 2.8333f; // 5 o'clock
 };

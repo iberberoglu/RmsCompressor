@@ -237,6 +237,10 @@ Xcode'un eklenti kopyalama adımı, her Release derlemesinde çıktıyı
 `~/Library/Audio/Plug-Ins/Components/` altına kuruyor; yeni sürümü görmesi için
 DAW'ı kapatıp açın.
 
+`Builds/VisualStudio2022/` altında Visual Studio 2022 proje dosyaları da var ve
+onlar da depodaki modülleri gösteriyor; ancak ben yalnızca macOS'ta derleyip
+test ettim, dolayısıyla Windows hedefini denenmemiş kabul edin.
+
 ---
 
 ## Depo yapısı
