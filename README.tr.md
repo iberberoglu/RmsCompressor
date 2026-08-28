@@ -27,7 +27,7 @@ Eklentiyi, İstanbul Teknik Üniversitesi'nde bir lisans dersi projesi olarak
 sıfırdan C++ ve JUCE ile yazdım (bkz. [Proje bağlamı](#proje-bağlamı)).
 Aşağıdaki iki fikri hayata geçirmek için JUCE'un iki DSP sınıfını
 (`juce::dsp::Compressor` ve `juce::dsp::BallisticsFilter`) yamaladım; yamalı
-modüller bu depoda `modules/` altında duruyor.
+modüller bu repoda `modules/` altında duruyor.
 
 ---
 
@@ -221,7 +221,7 @@ Sonra DAW'ı yeniden başlatın. Notarize edilmemiş bir ikili dosyayı
 ## Derleme
 
 macOS ve Xcode yeterli, başka bir şey gerekmiyor. Proje **JUCE 7.0.12**
-hedefliyor ve yamalı modüller `modules/` içinde depoda duruyor; yani ayrıca
+hedefliyor ve yamalı modüller `modules/` içinde repoda duruyor; yani ayrıca
 JUCE kurmanıza ve hiçbir yol ayarlamanıza gerek yok:
 
 ```bash
@@ -238,12 +238,12 @@ Xcode'un eklenti kopyalama adımı, her Release derlemesinde çıktıyı
 DAW'ı kapatıp açın.
 
 `Builds/VisualStudio2022/` altında Visual Studio 2022 proje dosyaları da var ve
-onlar da depodaki modülleri gösteriyor; ancak ben yalnızca macOS'ta derleyip
+onlar da repodaki modülleri gösteriyor; ancak ben yalnızca macOS'ta derleyip
 test ettim, dolayısıyla Windows hedefini denenmemiş kabul edin.
 
 ---
 
-## Depo yapısı
+## Repo yapısı
 
 | Yol | Ne olduğu |
 |---|---|
@@ -301,7 +301,7 @@ buradaki maddeleri işaretliyorum.
       `/Applications/JUCE/modules` mutlak yoluna atıf yapıyordu; yani sadece
       projeyi ilk yazdığım makinede derleniyordu. Ayrıca `JuceLibraryCode/`
       içindeki iki JUCE 8 kalıntısı, JUCE 7 modülleriyle çakışıyordu. Bütün
-      atıflar artık depodaki `modules/` klasörünü gösteriyor, kalıntılar
+      atıflar artık repodaki `modules/` klasörünü gösteriyor, kalıntılar
       silindi ve derleme hiçbir bayrak istemiyor.
 - [x] **Gain reduction değerinde veri yarışı.** `gainReductionDb` düz bir
       `float`'tı; audio thread'den yazılıp arayüz thread'inden okunuyordu.
@@ -340,7 +340,7 @@ paralel götürdüm.
 
 Ayrıca 29 sayfalık bir proje raporu yazdım: DSP arka planını, geliştirme
 sürecini, yol boyunca karşılaştığım problemleri ve PluginDoctor ölçümlerini
-kapsıyor. Bu depoda yok; isterseniz bana yazın, ileteyim.
+kapsıyor. Bu repoda yok; isterseniz bana yazın, ileteyim.
 
 ### Teşekkür
 
@@ -358,6 +358,6 @@ de aklıma gelmemişti; bu, teknik cevabın kendisi kadar değerli çıktı.
 
 **GPLv3**, bkz. [LICENSE](LICENSE).
 
-Bu depo, JUCE 7 modüllerinin değiştirilmiş kopyalarını içeriyor ve bunları
+Bu repo, JUCE 7 modüllerinin değiştirilmiş kopyalarını içeriyor ve bunları
 JUCE'un GPLv3 seçeneği kapsamında kullanıyorum (JUCE splash screen açık);
 dolayısıyla projenin tamamı aynı koşullarla dağıtılıyor.

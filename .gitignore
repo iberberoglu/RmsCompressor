@@ -1,37 +1,37 @@
 # macOS
 **/.DS_Store
 
-# Derleme çıktıları — diskte kalır, git'te tutulmaz (yüzlerce MB binary)
+# Build output. Stays on disk, never in the repo (hundreds of MB of binaries).
 Builds/MacOSX/build/
 Builds/VisualStudio2022/x64/
 Builds/VisualStudio2022/*.user
 **/*.o
 **/*.a
 
-# Xcode kullanıcıya özel durum dosyaları
+# Xcode per-user state
 **/xcuserdata/
 **/*.xcuserstate
 
-# Okul sunumu / rapor dosyaları — depo dışında tutulur (rapor, .key, .pages, demo Live seti)
+# University report and presentation files, kept outside the repo
 Serbest Proje Çalışması*/
 _git_yedek_*/
 
-# Kişisel çalışma notları — depoya ve GitHub'a asla girmesin
+# Personal working notes
 YAPILACAKLAR.md
 **/YAPILACAKLAR.md
 
-# Test ses malzemesi — diskte kalır, depoda tutulmaz
+# Test audio. Stays on disk, not tracked.
 *.wav
 *.aif
 *.aiff
 
-# DAW önbellekleri (Ableton analizi, Reaper dalga formu)
+# DAW caches (Ableton analysis, Reaper peaks)
 *.asd
 *.reapeaks
 peaks/
 
-# AudioPluginHost test oturumları — mutlak yol içeriyor, taşınabilir değil
+# AudioPluginHost sessions. They embed absolute paths, so they are not portable.
 *.filtergraph
 
-# Öğrenirken incelenen üçüncü taraf proje — bu depoya ait değil
+# A third-party project I studied while learning. Not part of this repo.
 AudioFilePlayer-master/
