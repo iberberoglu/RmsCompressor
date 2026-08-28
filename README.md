@@ -21,8 +21,8 @@ them out onto the front panel.
 
 I built this from scratch in C++ and JUCE as an undergraduate project at Istanbul
 Technical University (see [Project context](#project-context)). To make the two
-ideas below work I patched two JUCE DSP classes — `juce::dsp::Compressor` and
-`juce::dsp::BallisticsFilter` — and the patched modules ship in this repository
+ideas below work I patched two JUCE DSP classes (`juce::dsp::Compressor` and
+`juce::dsp::BallisticsFilter`), and the patched modules ship in this repository
 under `modules/`.
 
 ---
@@ -32,7 +32,7 @@ under `modules/`.
 ### 1. An RMS detection window you can set
 
 JUCE's `AudioBuffer::getRMSLevel()` averages over whatever buffer the host hands
-you — 128 samples, 512, 1024, whatever the DAW is set to. You don't control it,
+you: 128 samples, 512, 1024, whatever the DAW is set to. You don't control it,
 and it changes the moment the user changes their buffer size.
 
 To cut the detector loose from the host, I push incoming samples into a lock-free
@@ -43,8 +43,8 @@ from 1 to 1500 ms.
 ![FIFO ring buffer](docs/fifo-diagram.png)
 
 The window length changes how much the detector "sees", and with it how
-aggressive the compressor feels. I measured this in PluginDoctor — same source,
-same threshold, same ratio:
+aggressive the compressor feels. I measured this in PluginDoctor, keeping the
+source, threshold and ratio the same:
 
 | RMS Period = 100 ms | RMS Period = 1000 ms |
 |---|---|
@@ -62,8 +62,8 @@ once per block, so the detector sees a staircase of discrete values instead of a
 continuous one, and large steps between them make the envelope harder than I
 wanted. Turning smoothing on interpolates between successive RMS values with
 `juce::LinearSmoothedValue`. The difference shows up most clearly in the release
-tail after the signal drops at 3 s — it snaps back in well under a second without
-smoothing, and eases out across the full remaining second with it:
+tail after the signal drops at 3 s. Without smoothing it snaps back in well under
+a second; with smoothing it eases out across the full remaining second:
 
 | Smoothing off | Smoothing on |
 |---|---|
@@ -103,7 +103,7 @@ signal completely differently.** In both measurements below I set Attack to
 |---|---|
 | ![coef -0.1](docs/measure-attack-coef-0.1.png) | ![coef -5.0](docs/measure-attack-coef-5.0.png) |
 
-At −0.1 the envelope is still settling two seconds in — a long, slow lean into
+At −0.1 the envelope is still settling two seconds in, a long and slow lean into
 the gain reduction. At −5.0 it snaps down and is essentially finished within
 300 ms. Every other knob is in the same position.
 
@@ -152,7 +152,7 @@ DAW buffer
 
 The gain reduction meter is a custom `juce::Component`
 (`Source/GainReductionMeter.h`). I started out drawing a conventional VU meter,
-then realised those gauges aren't far from a car's speedometer — so I drew one,
+then realised those gauges aren't far from a car's speedometer, so I drew one
 and mapped "faster" onto "more gain reduction".
 
 ---
@@ -180,8 +180,8 @@ RMS over roughly the last 4 seconds) and **Current RMS** per channel, refreshed
 Make-up gain isn't in JUCE's compressor class, so I wrote it and added it to the
 output stage.
 
-When you pick **Peak**, RMS Period stops doing anything — the detector reads the
-sample magnitude directly.
+When you pick **Peak**, RMS Period stops doing anything, because the detector reads
+the sample magnitude directly.
 
 I tested the plug-in in Logic Pro, Ableton Live and Reaper.
 
@@ -195,8 +195,8 @@ build the DSP.
 
 There is one wrinkle to know about. `JuceLibraryCode/` in this repo came out of a
 **JUCE 8** Projucer while `modules/` is JUCE 7, so two JUCE 8-only translation
-units have to be excluded. This command works — AU target, `BUILD SUCCEEDED`,
-passes `auval`:
+units have to be excluded. This command works on the AU target, gives
+`BUILD SUCCEEDED` and passes `auval`:
 
 ```bash
 cd Builds/MacOSX
@@ -226,15 +226,15 @@ DAW to pick up the new version.
 | `Source/PluginEditor.*` | Interface, 24 Hz refresh timer |
 | `Source/Fifo.h` | Lock-free ring buffer for the detection window |
 | `Source/GainReductionMeter.h` | Custom analogue-style needle meter |
-| `modules/juce_dsp/widgets/juce_Compressor.*` | **Patched** — I added the RMS detection path, make-up gain and bypass |
-| `modules/juce_dsp/processors/juce_BallisticsFilter.*` | **Patched** — I exposed the envelope coefficients |
+| `modules/juce_dsp/widgets/juce_Compressor.*` | **Patched.** I added the RMS detection path, make-up gain and bypass |
+| `modules/juce_dsp/processors/juce_BallisticsFilter.*` | **Patched.** I exposed the envelope coefficients |
 | `docs/` | Screenshots and measurements used in this README |
 
 ### Branches
 
 | Branch | Purpose |
 |---|---|
-| `au-release` | **Default.** The working line — patched modules, builds and passes `auval` |
+| `au-release` | **Default.** The working line: patched modules, builds and passes `auval` |
 | `main` | Archive. An experiment I abandoned that added a third detection mode; I lost its DSP half, so it doesn't build |
 | `arsiv-2024-nisan` | Archive. An early April 2024 snapshot, from before I patched the JUCE DSP modules |
 
@@ -247,9 +247,9 @@ in August 2026 I went through it properly and found things worth fixing. I tick
 items off here as I fix them.
 
 - [ ] **Per-sample heap allocation on the audio thread.** `processSample` takes
-      `std::vector<float> rmsLevels` by value from inside the sample loop —
-      roughly 44,100 allocations a second per channel. Passing by `const&` fixes
-      it.
+      `std::vector<float> rmsLevels` by value from inside the sample loop, which
+      works out to roughly 44,100 allocations a second per channel. Passing by
+      `const&` fixes it.
 - [ ] **Ratio is initialised with its index instead of its value.**
       `prepareToPlay` hands the choice index straight to `setRatio()`. Load a
       session saved at ratio 1.0 and it calls `setRatio(0)`, which divides by
@@ -286,24 +286,24 @@ I built this for **Serbest Proje Çalışması 2** (Independent Project Study 2)
 of 2024, and submitted it on 7 June 2024. My advisor was **Dr. Ozan Sarıer**, and
 the adjustable-window idea came out of his suggestion.
 
-I started that term with essentially no programming experience — a little
-JavaScript, no C++ at all. I learned the language and built the compressor in
+I started that term with essentially no programming experience: a little
+JavaScript, and no C++ at all. I learned the language and built the compressor in
 parallel over a single semester.
 
 I also wrote a full project report (29 pages, in Turkish) covering the DSP
 background, the development process, the problems I ran into and the PluginDoctor
-measurements. It isn't in this repository — ask me if you'd like a copy.
+measurements. It isn't in this repository, so ask me if you'd like a copy.
 
 ### Acknowledgements
 
-**Akash Murthy** — I emailed him out of the blue, and he gave up an hour of his
+**Akash Murthy.** I emailed him out of the blue, and he gave up an hour of his
 time for a Zoom call and explained how a FIFO ring buffer could decouple RMS
 detection from the host buffer size. That conversation unblocked the central
 problem of the project. It also hadn't occurred to me that I could just talk to
 an audio engineer on the other side of the world, which turned out to be worth as
 much as the technical answer.
 
-**Dr. Ozan Sarıer** — for the original idea and for supervising the work.
+**Dr. Ozan Sarıer**, for the original idea and for supervising the work.
 
 ---
 

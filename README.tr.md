@@ -22,8 +22,8 @@ Bu ikisi normalde DSP kodunun içine gömülü sabitlerdir. Ben ikisini de çık
 
 Eklentiyi, İstanbul Teknik Üniversitesi'nde bir lisans dersi projesi olarak
 sıfırdan C++ ve JUCE ile yazdım (bkz. [Proje bağlamı](#proje-bağlamı)).
-Aşağıdaki iki fikri hayata geçirmek için JUCE'un iki DSP sınıfını —
-`juce::dsp::Compressor` ve `juce::dsp::BallisticsFilter` — yamaladım; yamalı
+Aşağıdaki iki fikri hayata geçirmek için JUCE'un iki DSP sınıfını
+(`juce::dsp::Compressor` ve `juce::dsp::BallisticsFilter`) yamaladım; yamalı
 modüller bu depoda `modules/` altında duruyor.
 
 ---
@@ -33,7 +33,7 @@ modüller bu depoda `modules/` altında duruyor.
 ### 1. Kendiniz ayarladığınız RMS hesaplama penceresi
 
 JUCE'un `AudioBuffer::getRMSLevel()` metodu, host'un size verdiği buffer
-üzerinden ortalama alır — 128 sample, 512, 1024, DAW ne ayarlıysa o. Bu sizin
+üzerinden ortalama alır: 128 sample, 512, 1024, DAW ne ayarlıysa o. Bu sizin
 kontrolünüzde değildir ve kullanıcı buffer boyutunu değiştirdiği anda o da
 değişir.
 
@@ -45,8 +45,8 @@ FIFO halka tamponuna yazıyorum (`Source/Fifo.h`) ve RMS'i, bu halkadan geri
 ![FIFO halka tamponu](docs/fifo-diagram.png)
 
 Pencere uzunluğu, algılayıcının "ne kadarını gördüğünü", dolayısıyla kompresörün
-ne kadar agresif hissettirdiğini değiştiriyor. Bunu PluginDoctor ile ölçtüm —
-aynı kaynak, aynı threshold, aynı ratio:
+ne kadar agresif hissettirdiğini değiştiriyor. Bunu PluginDoctor ile ölçtüm;
+kaynak, threshold ve ratio her iki ölçümde de aynı:
 
 | RMS Period = 100 ms | RMS Period = 1000 ms |
 |---|---|
@@ -107,7 +107,7 @@ RMS Period'u 100 ms yaptım. Sadece katsayı değişiyor:
 |---|---|
 | ![katsayı -0.1](docs/measure-attack-coef-0.1.png) | ![katsayı -5.0](docs/measure-attack-coef-5.0.png) |
 
-−0.1'de zarf iki saniye sonra hâlâ oturmaya devam ediyor — gain reduction'a uzun
+−0.1'de zarf iki saniye sonra hâlâ oturmaya devam ediyor; gain reduction'a uzun
 ve yavaş bir yaslanma. −5.0'da ise anında iniyor ve 300 ms içinde işini bitirmiş
 oluyor. Diğer bütün ayarlar aynı yerde.
 
@@ -156,8 +156,8 @@ DAW buffer
 
 Gain reduction metresi, özel yazdığım bir `juce::Component`
 (`Source/GainReductionMeter.h`). Başta klasik bir VU metre çiziyordum, sonra bu
-göstergelerin arabaların hız göstergesinden çok da uzak olmadığını fark ettim —
-ben de bir hız göstergesi çizdim ve "daha hızlı"yı "daha çok gain reduction"a
+göstergelerin arabaların hız göstergesinden çok da uzak olmadığını fark ettim.
+Ben de bir hız göstergesi çizdim ve "daha hızlı"yı "daha çok gain reduction"a
 denk getirdim.
 
 ---
@@ -185,7 +185,7 @@ Bütün parametreler otomasyona uygun. Üst kısımda ayrıca kanal başına **M
 Make-up gain JUCE'un kompresör sınıfında yok, o yüzden onu ben yazıp çıkış
 katına ekledim.
 
-**Peak**'i seçtiğinizde RMS Period'un bir etkisi kalmıyor — algılayıcı doğrudan
+**Peak**'i seçtiğinizde RMS Period'un bir etkisi kalmıyor, çünkü algılayıcı doğrudan
 sample'ın genliğini okuyor.
 
 Eklentiyi Logic Pro, Ableton Live ve Reaper'da denedim.
@@ -200,8 +200,8 @@ gerek yok.
 
 Bilmeniz gereken tek pürüz şu: bu depodaki `JuceLibraryCode/` bir **JUCE 8**
 Projucer'ından çıktı, `modules/` ise JUCE 7. Bu yüzden JUCE 8'e ait iki derleme
-biriminin hariç tutulması gerekiyor. Aşağıdaki komut çalışıyor — AU hedefi,
-`BUILD SUCCEEDED`, `auval` geçiyor:
+biriminin hariç tutulması gerekiyor. Aşağıdaki komut AU hedefinde çalışıyor;
+`BUILD SUCCEEDED` veriyor ve `auval` geçiyor:
 
 ```bash
 cd Builds/MacOSX
@@ -231,15 +231,15 @@ DAW'ı kapatıp açın.
 | `Source/PluginEditor.*` | Arayüz, 24 Hz yenileme timer'ı |
 | `Source/Fifo.h` | Hesaplama penceresi için kilitsiz halka tamponu |
 | `Source/GainReductionMeter.h` | Özel yazdığım analog tarzı iğneli metre |
-| `modules/juce_dsp/widgets/juce_Compressor.*` | **Yamalı** — RMS algılama yolunu, make-up gain'i ve bypass'ı ekledim |
-| `modules/juce_dsp/processors/juce_BallisticsFilter.*` | **Yamalı** — zarf katsayılarını dışarı açtım |
+| `modules/juce_dsp/widgets/juce_Compressor.*` | **Yamalı.** RMS algılama yolunu, make-up gain'i ve bypass'ı ekledim |
+| `modules/juce_dsp/processors/juce_BallisticsFilter.*` | **Yamalı.** Zarf katsayılarını dışarı açtım |
 | `docs/` | Bu README'de kullandığım ekran görüntüleri ve ölçümler |
 
 ### Dallar
 
 | Dal | Amacı |
 |---|---|
-| `au-release` | **Varsayılan.** Çalışan hat — yamalı modüller, derleniyor ve `auval` geçiyor |
+| `au-release` | **Varsayılan.** Çalışan hat: yamalı modüller, derleniyor ve `auval` geçiyor |
 | `main` | Arşiv. Üçüncü bir algılama modu eklemeye çalışıp yarıda bıraktığım bir deneme; DSP tarafını kaybettim, o yüzden derlenmiyor |
 | `arsiv-2024-nisan` | Arşiv. JUCE DSP modüllerini yamalamadan önceki, Nisan 2024 tarihli erken bir anlık görüntü |
 
@@ -253,8 +253,8 @@ buradaki maddeleri işaretliyorum.
 
 - [ ] **Audio thread'de her sample için heap tahsisi.** `processSample`,
       `std::vector<float> rmsLevels`'ı sample döngüsünün içinde değer olarak
-      alıyor — kanal başına saniyede yaklaşık 44.100 tahsis. `const&` ile
-      geçirmek sorunu çözüyor.
+      alıyor; bu da kanal başına saniyede yaklaşık 44.100 tahsis demek.
+      `const&` ile geçirmek sorunu çözüyor.
 - [ ] **Ratio, değeri yerine indeksiyle başlatılıyor.** `prepareToPlay`, seçim
       listesinin indeksini doğrudan `setRatio()`'ya veriyor. Ratio 1.0 ile
       kaydedilmiş bir oturumu açtığınızda `setRatio(0)` çağrılıyor ve sıfıra
@@ -292,23 +292,23 @@ baharında **Serbest Proje Çalışması 2** dersi için yaptım ve 7 Haziran 20
 teslim ettim. Danışmanım **Dr. Ozan Sarıer**'di; değiştirilebilir pencere fikri
 de onun önerisinden çıktı.
 
-Döneme neredeyse hiç programlama bilgisi olmadan başladım — biraz JavaScript,
-C++ ise hiç yoktu. Dili öğrenmekle kompresörü yazmayı tek dönem içinde paralel
-götürdüm.
+Döneme neredeyse hiç programlama bilgisi olmadan başladım: biraz JavaScript
+vardı, C++ ise hiç yoktu. Dili öğrenmekle kompresörü yazmayı tek dönem içinde
+paralel götürdüm.
 
 Ayrıca 29 sayfalık bir proje raporu yazdım: DSP arka planını, geliştirme
 sürecini, yol boyunca karşılaştığım problemleri ve PluginDoctor ölçümlerini
-kapsıyor. Bu depoda yok — isterseniz bana yazın, ileteyim.
+kapsıyor. Bu depoda yok; isterseniz bana yazın, ileteyim.
 
 ### Teşekkür
 
-**Akash Murthy** — kendisine hiç tanımadan bir e-posta attım; bir saatini ayırıp
+**Akash Murthy.** Kendisine hiç tanımadan bir e-posta attım; bir saatini ayırıp
 benimle Zoom görüşmesi yaptı ve FIFO halka tamponunun, RMS algılamayı host buffer
 boyutundan nasıl bağımsızlaştırabileceğini anlattı. O görüşme projenin en kritik
 problemini açtı. Dünyanın öbür ucundaki bir ses mühendisiyle öylece konuşabileceğim
 de aklıma gelmemişti; bu, teknik cevabın kendisi kadar değerli çıktı.
 
-**Dr. Ozan Sarıer** — projenin fikri ve danışmanlığı için.
+**Dr. Ozan Sarıer**, projenin fikri ve danışmanlığı için.
 
 ---
 
