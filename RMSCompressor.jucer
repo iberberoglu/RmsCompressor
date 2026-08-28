@@ -3,7 +3,8 @@
 <JUCERPROJECT id="VFncaP" name="RMSCompressor" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
               companyName="Ismail Berberoglu" companyWebsite="https://github.com/iberberoglu/RmsCompressor"
-              pluginManufacturerCode="Ibrb" pluginCode="RmsC" pluginName="RMSCompressor">
+              pluginManufacturerCode="Ibrb" pluginCode="RmsC" microphonePermissionNeeded="1"
+              microphonePermissionsText="RMSCompressor processes live audio, so it needs an input device to compress." pluginName="RMSCompressor">
   <MAINGROUP id="uPbVgg" name="RMSCompressor">
     <GROUP id="{EC28DB35-CDEB-E1CB-7CBF-F4E91AEA92AE}" name="Source">
       <FILE id="za6fZJ" name="GainReductionMeter.h" compile="0" resource="0"
