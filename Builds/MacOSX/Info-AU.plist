@@ -29,7 +29,7 @@
     <array>
       <dict>
         <key>name</key>
-        <string>ismailberberoglu: RMSCompressor_EgeMol_Edition</string>
+        <string>ismailberberoglu: RMSCompressor</string>
         <key>description</key>
         <string>RMSCompressor</string>
         <key>factoryFunction</key>

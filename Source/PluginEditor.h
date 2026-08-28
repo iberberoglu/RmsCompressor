@@ -70,8 +70,6 @@ private:
     juce::Label currentRmsValue, maxRmsValue;
     juce::Label rmsPeriodLabel;
     
-    juce::Label egeMolLabel;
-    
     float maxRmsLeft{}, maxRmsRight{};
     int framesElapsed = 0;
     

@@ -195,7 +195,9 @@ void RMSCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer
     auto block = juce::dsp::AudioBlock<float>(buffer);
     auto context = juce::dsp::ProcessContextReplacing<float>(block);
     
+    // attack release coefficient sonra ayarla
     compressor.process(context, rmsLevels, peakValue, rmsValue, attackCoefficientValue, releaseCoefficientValue);
+    //compressor.process(context, rmsLevels, peakValue, rmsValue);
 
 }
 

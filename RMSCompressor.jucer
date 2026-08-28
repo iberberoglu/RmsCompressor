@@ -2,7 +2,7 @@
 
 <JUCERPROJECT id="VFncaP" name="RMSCompressor" projectType="audioplug" useAppConfig="0"
               addUsingNamespaceToJuceHeader="0" displaySplashScreen="1" jucerFormatVersion="1"
-              companyName="ismailberberoglu" pluginName="RMSCompressor_EgeMol_Edition">
+              companyName="ismailberberoglu" pluginName="RMSCompressor">
   <MAINGROUP id="uPbVgg" name="RMSCompressor">
     <GROUP id="{EC28DB35-CDEB-E1CB-7CBF-F4E91AEA92AE}" name="Source">
       <FILE id="za6fZJ" name="GainReductionMeter.h" compile="0" resource="0"
@@ -27,7 +27,7 @@
     <MODULE id="juce_audio_utils" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_core" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_data_structures" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
-    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
+    <MODULE id="juce_dsp" showAllCode="1" useLocalCopy="0" useGlobalPath="0"/>
     <MODULE id="juce_events" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_graphics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
     <MODULE id="juce_gui_basics" showAllCode="1" useLocalCopy="0" useGlobalPath="1"/>
@@ -41,19 +41,19 @@
         <CONFIGURATION isDebug="0" name="Release" targetName="RMSCompressor"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_audio_basics" path="../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_devices" path="../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_plugin_client" path="../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_processors" path="../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_utils" path="../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_core" path="../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_data_structures" path="../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_events" path="../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_graphics" path="../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_basics" path="../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="../../../Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_dsp" path="../../../Applications/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="modules"/>
+        <MODULEPATH id="juce_audio_devices" path="modules"/>
+        <MODULEPATH id="juce_audio_formats" path="modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="modules"/>
+        <MODULEPATH id="juce_audio_processors" path="modules"/>
+        <MODULEPATH id="juce_audio_utils" path="modules"/>
+        <MODULEPATH id="juce_core" path="modules"/>
+        <MODULEPATH id="juce_data_structures" path="modules"/>
+        <MODULEPATH id="juce_events" path="modules"/>
+        <MODULEPATH id="juce_graphics" path="modules"/>
+        <MODULEPATH id="juce_gui_basics" path="modules"/>
+        <MODULEPATH id="juce_gui_extra" path="modules"/>
+        <MODULEPATH id="juce_dsp" path="modules"/>
       </MODULEPATHS>
     </XCODE_MAC>
     <VS2022 targetFolder="Builds/VisualStudio2022">
@@ -62,19 +62,19 @@
         <CONFIGURATION isDebug="0" name="Release"/>
       </CONFIGURATIONS>
       <MODULEPATHS>
-        <MODULEPATH id="juce_audio_basics" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_devices" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_formats" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_plugin_client" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_processors" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_audio_utils" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_core" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_data_structures" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_dsp" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_events" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_graphics" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_basics" path="/Applications/JUCE/modules"/>
-        <MODULEPATH id="juce_gui_extra" path="/Applications/JUCE/modules"/>
+        <MODULEPATH id="juce_audio_basics" path="modules"/>
+        <MODULEPATH id="juce_audio_devices" path="modules"/>
+        <MODULEPATH id="juce_audio_formats" path="modules"/>
+        <MODULEPATH id="juce_audio_plugin_client" path="modules"/>
+        <MODULEPATH id="juce_audio_processors" path="modules"/>
+        <MODULEPATH id="juce_audio_utils" path="modules"/>
+        <MODULEPATH id="juce_core" path="modules"/>
+        <MODULEPATH id="juce_data_structures" path="modules"/>
+        <MODULEPATH id="juce_events" path="modules"/>
+        <MODULEPATH id="juce_graphics" path="modules"/>
+        <MODULEPATH id="juce_gui_basics" path="modules"/>
+        <MODULEPATH id="juce_gui_extra" path="modules"/>
+        <MODULEPATH id="juce_dsp" path="modules"/>
       </MODULEPATHS>
     </VS2022>
   </EXPORTFORMATS>

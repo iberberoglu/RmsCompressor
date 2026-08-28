@@ -54,8 +54,6 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     addAndMakeVisible(peakToggle);
     addAndMakeVisible(rmsToggle);
     
-    addAndMakeVisible(egeMolLabel);
-    
     addAndMakeVisible(attackCoefficientSlider);
     addAndMakeVisible(releaseCoefficientSlider);
     addAndMakeVisible(attackCoefficientLabel);
@@ -101,12 +99,7 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     releaseTimeLabel.setText("Release", juce::dontSendNotification);
     releaseTimeLabel.setFont(juce::Font{}.withStyle(juce::Font::FontStyleFlags::bold));
     releaseTimeLabel.setJustificationType(juce::Justification::centred);
-    
-    egeMolLabel.setText("- Ege Mol Special Edition -", juce::dontSendNotification);
-    egeMolLabel.setFont(juce::Font(12.0).withStyle(juce::Font::FontStyleFlags::italic));
-    egeMolLabel.setJustificationType(juce::Justification::centred);
-    egeMolLabel.setColour(juce::Label::textColourId, juce::Colours::magenta);
-    
+
     
     ratioSlider.setSliderStyle(juce::Slider::RotaryVerticalDrag);
     ratioSlider.setTextBoxStyle(juce::Slider::TextBoxBelow, false, 100, 20);
@@ -257,7 +250,5 @@ void RMSCompressorAudioProcessorEditor::resized()
     attackCoefficientLabel.setBounds(getWidth() / 40 , getHeight() / 5 + 55, getWidth() / 8, getHeight() / 8);
     
     releaseCoefficientLabel.setBounds(getWidth() / 40 + getWidth() / 8 + 15, getHeight() / 5 + 55, getWidth() / 8, getHeight() / 8);
-
-    egeMolLabel.setBounds(getWidth() / 2 - 60, getHeight() - 60, 120, 100);
 
 }

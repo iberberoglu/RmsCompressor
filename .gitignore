@@ -1,1 +1,13 @@
+# macOS
 **/.DS_Store
+
+# Derleme çıktıları — diskte kalır, git'te tutulmaz (yüzlerce MB binary)
+Builds/MacOSX/build/
+Builds/VisualStudio2022/x64/
+Builds/VisualStudio2022/*.user
+**/*.o
+**/*.a
+
+# Xcode kullanıcıya özel durum dosyaları
+**/xcuserdata/
+**/*.xcuserstate
