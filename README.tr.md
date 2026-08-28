@@ -8,6 +8,9 @@
 
 ![Eklenti arayüzü](docs/ui.png)
 
+**[macOS için indir](../../releases/latest)** (Audio Unit ve VST3, universal
+binary) ya da [kendiniz derleyin](#derleme).
+
 ---
 
 ## Nedir
@@ -192,34 +195,47 @@ Eklentiyi Logic Pro, Ableton Live ve Reaper'da denedim.
 
 ---
 
-## Derleme
+## Hazır sürümü kurma
 
-macOS ve Xcode gerekiyor. Proje **JUCE 7.0.12** hedefliyor ve yamalı modüller
-`modules/` içinde depoda duruyor; yani DSP'yi derlemek için ayrıca JUCE kurmanıza
-gerek yok.
+İndirdiğiniz dosyayı açın ve eklentiyi doğru klasöre koyun:
 
-Bilmeniz gereken tek pürüz şu: bu depodaki `JuceLibraryCode/` bir **JUCE 8**
-Projucer'ından çıktı, `modules/` ise JUCE 7. Bu yüzden JUCE 8'e ait iki derleme
-biriminin hariç tutulması gerekiyor. Aşağıdaki komut AU hedefinde çalışıyor;
-`BUILD SUCCEEDED` veriyor ve `auval` geçiyor:
+| Biçim | Klasör |
+|---|---|
+| Audio Unit (`.component`) | `~/Library/Audio/Plug-Ins/Components/` |
+| VST3 (`.vst3`) | `~/Library/Audio/Plug-Ins/VST3/` |
+
+Bu derlemeleri yerel olarak imzalıyorum ama Apple notarizasyonu için ödeme
+yapmıyorum; bu yüzden macOS eklentiyi ilk açışta reddedecek. Karantina
+işaretini bir kez temizlemeniz yeterli:
 
 ```bash
-cd Builds/MacOSX
-xcodebuild -project RMSCompressor.xcodeproj \
-  -target "RMSCompressor - AU" -configuration Release \
-  EXCLUDED_SOURCE_FILE_NAMES="include_juce_graphics_Harfbuzz.cpp include_juce_core_CompilationTime.cpp" \
-  HEADER_SEARCH_PATHS="\$(SRCROOT)/../../JuceLibraryCode \$(SRCROOT)/../../modules \$(SRCROOT)/../../modules/juce_audio_plugin_client/AU \$(SRCROOT)/../../modules/juce_audio_processors/format_types/VST3_SDK" \
-  build
+xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/Components/RMSCompressor.component
+xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/RMSCompressor.vst3
 ```
 
-VST3 için hedefi `"RMSCompressor - VST3"` olarak değiştirin.
+Sonra DAW'ı yeniden başlatın. Notarize edilmemiş bir ikili dosyayı
+çalıştırmak istemezseniz kaynaktan derleyin; yaklaşık bir dakika sürüyor.
+
+---
+
+## Derleme
+
+macOS ve Xcode yeterli, başka bir şey gerekmiyor. Proje **JUCE 7.0.12**
+hedefliyor ve yamalı modüller `modules/` içinde depoda duruyor; yani ayrıca
+JUCE kurmanıza ve hiçbir yol ayarlamanıza gerek yok:
+
+```bash
+git clone https://github.com/iberberoglu/RmsCompressor.git
+cd RmsCompressor/Builds/MacOSX
+xcodebuild -project RMSCompressor.xcodeproj -target "RMSCompressor - AU" -configuration Release build
+```
+
+VST3 için hedefi `"RMSCompressor - VST3"` olarak değiştirin. İkisi de universal
+binary üretiyor (Intel ve Apple Silicon), AU ise `auval` geçiyor.
 
 Xcode'un eklenti kopyalama adımı, her Release derlemesinde çıktıyı
 `~/Library/Audio/Plug-Ins/Components/` altına kuruyor; yeni sürümü görmesi için
 DAW'ı kapatıp açın.
-
-> Projeyi bir JUCE 7 Projucer'ıyla yeniden üretmek ya da yamalarımı JUCE 8'e
-> taşımak, bu bayraklara olan ihtiyacı ortadan kaldırır. Aşağıdaki listede duruyor.
 
 ---
 
@@ -240,8 +256,8 @@ DAW'ı kapatıp açın.
 | Dal | Amacı |
 |---|---|
 | `au-release` | **Varsayılan.** Çalışan hat: yamalı modüller, derleniyor ve `auval` geçiyor |
-| `main` | Arşiv. Üçüncü bir algılama modu eklemeye çalışıp yarıda bıraktığım bir deneme; DSP tarafını kaybettim, o yüzden derlenmiyor |
-| `arsiv-2024-nisan` | Arşiv. JUCE DSP modüllerini yamalamadan önceki, Nisan 2024 tarihli erken bir anlık görüntü |
+| `archive/variable-sized-rms` | Arşiv. Üçüncü bir algılama modu eklemeye çalışıp yarıda bıraktığım bir deneme; DSP tarafını kaybettim, o yüzden derlenmiyor |
+| `archive/2024-april-snapshot` | Arşiv. JUCE DSP modüllerini yamalamadan önceki, Nisan 2024 tarihli erken bir anlık görüntü |
 
 ---
 
@@ -261,8 +277,6 @@ buradaki maddeleri işaretliyorum.
 - [ ] **Gain reduction metresi kalibre değil.** Ölçek işaretlerini eşit açı
       aralıklarıyla çiziyorum, ama temsil ettikleri değerler doğrusal değil;
       dolayısıyla iğne, uçlar dışında etiketlerle uyuşmuyor.
-- [ ] **`modules/` ile `JuceLibraryCode/` arasında JUCE 7 / JUCE 8
-      uyumsuzluğu**; yukarıdaki derleme bayrakları bu yüzden var.
 
 ### Düzeltilenler
 
@@ -279,6 +293,12 @@ buradaki maddeleri işaretliyorum.
       okuyordu, oysa `isBusesLayoutSupported` mono'ya izin veriyor. Artık
       processor'a kaç kanalın güvenle sorgulanabileceğini soruyor ve mono'da
       sol kanala düşüyor.
+- [x] **Xcode projesi taşınabilir değildi.** 73 yerde
+      `/Applications/JUCE/modules` mutlak yoluna atıf yapıyordu; yani sadece
+      projeyi ilk yazdığım makinede derleniyordu. Ayrıca `JuceLibraryCode/`
+      içindeki iki JUCE 8 kalıntısı, JUCE 7 modülleriyle çakışıyordu. Bütün
+      atıflar artık depodaki `modules/` klasörünü gösteriyor, kalıntılar
+      silindi ve derleme hiçbir bayrak istemiyor.
 - [x] **Gain reduction değerinde veri yarışı.** `gainReductionDb` düz bir
       `float`'tı; audio thread'den yazılıp arayüz thread'inden okunuyordu.
       Artık `std::atomic<float>`. (Sorunun FIFO tarafı hâlâ açık, yukarıda.)

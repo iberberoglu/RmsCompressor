@@ -8,6 +8,9 @@
 
 ![Plug-in interface](docs/ui.png)
 
+**[Download for macOS](../../releases/latest)** (Audio Unit and VST3, universal
+binary) or [build it yourself](#building).
+
 ---
 
 ## What it is
@@ -187,34 +190,46 @@ I tested the plug-in in Logic Pro, Ableton Live and Reaper.
 
 ---
 
-## Building
+## Installing a release build
 
-You need macOS and Xcode. The project targets **JUCE 7.0.12** and the patched
-modules are vendored in `modules/`, so you don't need a separate JUCE checkout to
-build the DSP.
+Unzip the download and drop the plug-in into the right folder:
 
-There is one wrinkle to know about. `JuceLibraryCode/` in this repo came out of a
-**JUCE 8** Projucer while `modules/` is JUCE 7, so two JUCE 8-only translation
-units have to be excluded. This command works on the AU target, gives
-`BUILD SUCCEEDED` and passes `auval`:
+| Format | Folder |
+|---|---|
+| Audio Unit (`.component`) | `~/Library/Audio/Plug-Ins/Components/` |
+| VST3 (`.vst3`) | `~/Library/Audio/Plug-Ins/VST3/` |
+
+I sign these builds locally but do not pay for Apple notarisation, so macOS will
+refuse to open the plug-in the first time. Clear the quarantine flag once:
 
 ```bash
-cd Builds/MacOSX
-xcodebuild -project RMSCompressor.xcodeproj \
-  -target "RMSCompressor - AU" -configuration Release \
-  EXCLUDED_SOURCE_FILE_NAMES="include_juce_graphics_Harfbuzz.cpp include_juce_core_CompilationTime.cpp" \
-  HEADER_SEARCH_PATHS="\$(SRCROOT)/../../JuceLibraryCode \$(SRCROOT)/../../modules \$(SRCROOT)/../../modules/juce_audio_plugin_client/AU \$(SRCROOT)/../../modules/juce_audio_processors/format_types/VST3_SDK" \
-  build
+xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/Components/RMSCompressor.component
+xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/RMSCompressor.vst3
 ```
 
-Swap the target for `"RMSCompressor - VST3"` to build the VST3.
+Then restart your DAW. If you would rather not run an unnotarised binary, build
+it from source instead, which takes about a minute.
+
+---
+
+## Building
+
+You need macOS and Xcode, and nothing else. The project targets **JUCE 7.0.12**
+and the patched modules are vendored in `modules/`, so there is no separate JUCE
+checkout to install and no path to configure:
+
+```bash
+git clone https://github.com/iberberoglu/RmsCompressor.git
+cd RmsCompressor/Builds/MacOSX
+xcodebuild -project RMSCompressor.xcodeproj -target "RMSCompressor - AU" -configuration Release build
+```
+
+Swap the target for `"RMSCompressor - VST3"` to build the VST3. Both produce
+universal binaries (Intel and Apple Silicon), and the AU passes `auval`.
 
 Xcode's plug-in copy step installs the built component into
 `~/Library/Audio/Plug-Ins/Components/` on every Release build, so restart your
 DAW to pick up the new version.
-
-> Regenerating the project from a JUCE 7 Projucer, or moving my patches onto
-> JUCE 8, would drop the need for those flags. It's on the list below.
 
 ---
 
@@ -235,8 +250,8 @@ DAW to pick up the new version.
 | Branch | Purpose |
 |---|---|
 | `au-release` | **Default.** The working line: patched modules, builds and passes `auval` |
-| `main` | Archive. An experiment I abandoned that added a third detection mode; I lost its DSP half, so it doesn't build |
-| `arsiv-2024-nisan` | Archive. An early April 2024 snapshot, from before I patched the JUCE DSP modules |
+| `archive/variable-sized-rms` | Archive. An experiment I abandoned that added a third detection mode; I lost its DSP half, so it doesn't build |
+| `archive/2024-april-snapshot` | Archive. An early April 2024 snapshot, from before I patched the JUCE DSP modules |
 
 ---
 
@@ -257,8 +272,6 @@ items off here as I fix them.
 - [ ] **The gain reduction meter isn't calibrated.** I draw the scale marks at
       equal angular spacing, but the values they stand for aren't linear, so the
       needle disagrees with the labels everywhere except the extremes.
-- [ ] **JUCE 7 / JUCE 8 mismatch** between `modules/` and `JuceLibraryCode/`,
-      which is why the build flags above exist.
 
 ### Fixed
 
@@ -274,6 +287,12 @@ items off here as I fix them.
       while `isBusesLayoutSupported` accepts mono buses. It now asks the
       processor how many channels are safe to query and falls back to the left
       channel.
+- [x] **The Xcode project was not portable.** It referenced
+      `/Applications/JUCE/modules` by absolute path in 73 places, so it only
+      built on the machine I originally wrote it on, and two JUCE 8 leftovers in
+      `JuceLibraryCode/` clashed with the JUCE 7 modules. Every reference now
+      points at the vendored `modules/`, the leftovers are gone, and the build
+      needs no flags.
 - [x] **Data race on the gain reduction value.** `gainReductionDb` was a plain
       `float` written from the audio thread and read from the UI thread. It is
       now a `std::atomic<float>`. (The FIFO half of this problem is still open,
