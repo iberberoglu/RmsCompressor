@@ -16,6 +16,22 @@ Builds/VisualStudio2022/*.user
 Serbest Proje Çalışması*/
 _git_yedek_*/
 
-# Kişisel çalışma notları - depoya ve GitHub'a asla girmesin
+# Kişisel çalışma notları — depoya ve GitHub'a asla girmesin
 YAPILACAKLAR.md
 **/YAPILACAKLAR.md
+
+# Test ses malzemesi — diskte kalır, depoda tutulmaz
+*.wav
+*.aif
+*.aiff
+
+# DAW önbellekleri (Ableton analizi, Reaper dalga formu)
+*.asd
+*.reapeaks
+peaks/
+
+# AudioPluginHost test oturumları — mutlak yol içeriyor, taşınabilir değil
+*.filtergraph
+
+# Öğrenirken incelenen üçüncü taraf proje — bu depoya ait değil
+AudioFilePlayer-master/
