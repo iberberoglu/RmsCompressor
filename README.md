@@ -8,8 +8,9 @@
 
 ![Plug-in interface](docs/ui.png)
 
-**[Download for macOS](../../releases/latest)** (Audio Unit and VST3, universal
-binary) or [build it yourself](#building).
+**[Download for macOS](../../releases/latest)** or [build it yourself](#building).
+Audio Unit, VST3, and a standalone app if you want to try it without a DAW. All
+universal binaries.
 
 ---
 
@@ -194,10 +195,11 @@ I tested the plug-in in Logic Pro, Ableton Live and Reaper.
 
 Unzip the download and drop the plug-in into the right folder:
 
-| Format | Folder |
+| Format | Where it goes |
 |---|---|
 | Audio Unit (`.component`) | `~/Library/Audio/Plug-Ins/Components/` |
 | VST3 (`.vst3`) | `~/Library/Audio/Plug-Ins/VST3/` |
+| Standalone (`.app`) | Anywhere. Double-click it, pick an input in Options, done. |
 
 I sign these builds locally but do not pay for Apple notarisation, so macOS will
 refuse to open the plug-in the first time. Clear the quarantine flag once:
@@ -205,6 +207,7 @@ refuse to open the plug-in the first time. Clear the quarantine flag once:
 ```bash
 xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/Components/RMSCompressor.component
 xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/RMSCompressor.vst3
+xattr -dr com.apple.quarantine /path/to/RMSCompressor.app
 ```
 
 Then restart your DAW. If you would rather not run an unnotarised binary, build
@@ -224,7 +227,8 @@ cd RmsCompressor/Builds/MacOSX
 xcodebuild -project RMSCompressor.xcodeproj -target "RMSCompressor - AU" -configuration Release build
 ```
 
-Swap the target for `"RMSCompressor - VST3"` to build the VST3. Both produce
+Swap the target for `"RMSCompressor - VST3"` or `"RMSCompressor - Standalone Plugin"`
+to build the other formats. They all produce
 universal binaries (Intel and Apple Silicon), and the AU passes `auval`.
 
 Xcode's plug-in copy step installs the built component into

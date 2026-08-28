@@ -8,8 +8,9 @@
 
 ![Eklenti arayüzü](docs/ui.png)
 
-**[macOS için indir](../../releases/latest)** (Audio Unit ve VST3, universal
-binary) ya da [kendiniz derleyin](#derleme).
+**[macOS için indir](../../releases/latest)** ya da [kendiniz derleyin](#derleme).
+Audio Unit, VST3 ve DAW'sız denemek isterseniz bağımsız bir uygulama. Hepsi
+universal binary.
 
 ---
 
@@ -199,10 +200,11 @@ Eklentiyi Logic Pro, Ableton Live ve Reaper'da denedim.
 
 İndirdiğiniz dosyayı açın ve eklentiyi doğru klasöre koyun:
 
-| Biçim | Klasör |
+| Biçim | Nereye |
 |---|---|
 | Audio Unit (`.component`) | `~/Library/Audio/Plug-Ins/Components/` |
 | VST3 (`.vst3`) | `~/Library/Audio/Plug-Ins/VST3/` |
+| Bağımsız uygulama (`.app`) | Herhangi bir yere. Çift tıklayın, Options'tan giriş seçin, hazır. |
 
 Bu derlemeleri yerel olarak imzalıyorum ama Apple notarizasyonu için ödeme
 yapmıyorum; bu yüzden macOS eklentiyi ilk açışta reddedecek. Karantina
@@ -211,6 +213,7 @@ işaretini bir kez temizlemeniz yeterli:
 ```bash
 xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/Components/RMSCompressor.component
 xattr -dr com.apple.quarantine ~/Library/Audio/Plug-Ins/VST3/RMSCompressor.vst3
+xattr -dr com.apple.quarantine /yol/RMSCompressor.app
 ```
 
 Sonra DAW'ı yeniden başlatın. Notarize edilmemiş bir ikili dosyayı
@@ -230,8 +233,9 @@ cd RmsCompressor/Builds/MacOSX
 xcodebuild -project RMSCompressor.xcodeproj -target "RMSCompressor - AU" -configuration Release build
 ```
 
-VST3 için hedefi `"RMSCompressor - VST3"` olarak değiştirin. İkisi de universal
-binary üretiyor (Intel ve Apple Silicon), AU ise `auval` geçiyor.
+Diğer biçimler için hedefi `"RMSCompressor - VST3"` ya da
+`"RMSCompressor - Standalone Plugin"` olarak değiştirin. Hepsi universal binary
+üretiyor (Intel ve Apple Silicon), AU ise `auval` geçiyor.
 
 Xcode'un eklenti kopyalama adımı, her Release derlemesinde çıktıyı
 `~/Library/Audio/Plug-Ins/Components/` altına kuruyor; yeni sürümü görmesi için
