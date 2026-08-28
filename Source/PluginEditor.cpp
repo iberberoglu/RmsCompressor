@@ -143,6 +143,12 @@ RMSCompressorAudioProcessorEditor::RMSCompressorAudioProcessorEditor (RMSCompres
     setSize (600, 600);
     setResizable(true, true);
     setResizeLimits(500, 500, 1000, 1000);
+
+    // Kare oranı burada zorlanıyor. Daha önce resized() içinde setSize()
+    // çağrılarak yapılıyordu; o çağrı resized()'ı yeniden tetiklediği için
+    // döngüye açıktı.
+    if (auto* constrainer = getConstrainer())
+        constrainer->setFixedAspectRatio(1.0);
     startTimerHz(24);
 }
 
@@ -189,16 +195,6 @@ void RMSCompressorAudioProcessorEditor::paint (juce::Graphics& g)
 
 void RMSCompressorAudioProcessorEditor::resized()
 {
-    int newWidth = getWidth();
-    int newHeight = getHeight();
-
-    // En ve boy oranını koruyarak pencereyi kare yapın
-    if (newWidth != newHeight)
-    {
-        int size = std::min(newWidth, newHeight);
-        setSize(size, size);
-    }
-    
     const auto container = getBounds().reduced(20);
     auto bounds = container;
 

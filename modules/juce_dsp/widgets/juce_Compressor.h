@@ -85,15 +85,17 @@ public:
             auto* outputSamples = outputBlock.getChannelPointer (channel);
 
             for (size_t i = 0; i < numSamples; ++i){
-                
-                inputDB = juce::Decibels::gainToDecibels(std::abs(inputSamples[i]));
-                
+
+                const auto inputDB = juce::Decibels::gainToDecibels(std::abs(inputSamples[i]));
+
                 outputSamples[i] = processSample((int) channel, inputSamples[i], rmsLevels, peak, rms, attackCoef, releaseCoef);
-                
-                outputDB = juce::Decibels::gainToDecibels(std::abs(outputSamples[i]));
-                
-                gainReductionDb = inputDB - outputDB;
-                
+
+                const auto outputDB = juce::Decibels::gainToDecibels(std::abs(outputSamples[i]));
+
+                // Arayüz thread'i bunu okuyor; atomic olmadan veri yarışı olurdu.
+                // Metre için sıralama garantisi gerekmediğinden relaxed yeterli.
+                gainReductionDb.store(static_cast<float> (inputDB - outputDB), std::memory_order_relaxed);
+
                 outputSamples[i] *= juce::Decibels::decibelsToGain(makeupGainValue);
             }
         }
@@ -102,9 +104,10 @@ public:
     /** Performs the processing operation on a single sample at a time. */
     SampleType processSample (int channel, SampleType inputValue, const std::vector<float>& rmsLevels, bool peak, bool rms, double attackCoef, double releaseCoef);
     
-    float gainReductionFunc()
+    /** Arayüzden (audio thread dışından) güvenle çağrılabilir. */
+    float gainReductionFunc() const
     {
-        return gainReductionDb;
+        return gainReductionDb.load(std::memory_order_relaxed);
     }
        
     void setMakeupGain(float newMakeUp)
@@ -122,9 +125,7 @@ private:
     void update();
     
     float makeupGainValue = 0.0f;
-    float gainReductionDb;
-    double inputDB;
-    double outputDB;
+    std::atomic<float> gainReductionDb { 0.0f };
     bool bypassed = false;
 
     //==============================================================================

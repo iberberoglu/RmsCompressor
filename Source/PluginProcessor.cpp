@@ -207,18 +207,19 @@ void RMSCompressorAudioProcessor::processBlock (juce::AudioBuffer<float>& buffer
     
     for (auto& rmsLevel : rmsLevels)
         rmsLevel.skip(numSamples);
-    
+
     rmsFifo.push(buffer);
-    
-    auto rmsLevels = getRmsLevels(); // RMS seviyelerini al
-    
+
+    // Üye rmsLevels bir LinearSmoothedValue vektörü; buradaki ise o
+    // yumuşatıcılardan okunan anlık dB değerleri. Aynı adı kullanmak üyeyi
+    // gölgeliyordu, bu yüzden ayrı adlandırıldı.
+    const auto currentRmsLevels = getRmsLevels();
+
     auto block = juce::dsp::AudioBlock<float>(buffer);
     auto context = juce::dsp::ProcessContextReplacing<float>(block);
-    
-    // attack release coefficient sonra ayarla
-    compressor.process(context, rmsLevels, peakValue, rmsValue, attackCoefficientValue, releaseCoefficientValue);
-    //compressor.process(context, rmsLevels, peakValue, rmsValue);
 
+    compressor.process(context, currentRmsLevels, peakValue, rmsValue,
+                       attackCoefficientValue, releaseCoefficientValue);
 }
 
 //==============================================================================
@@ -297,7 +298,6 @@ void RMSCompressorAudioProcessor::parameterChanged(const juce::String& parameter
 {
     if (parameterID.equalsIgnoreCase("rmsPeriod")){
         rmsWindowSize = static_cast<int>(sampleRate * newValue) / 1000;
-//        getBPM();
     }
     if (parameterID.equalsIgnoreCase("smoothing"))
         isSmoothed = static_cast<bool> (newValue);
@@ -375,22 +375,6 @@ void RMSCompressorAudioProcessor::processLevelValue(juce::LinearSmoothedValue<fl
     }
     smoothedValue.setCurrentAndTargetValue(value);
 }
-
-//void RMSCompressorAudioProcessor::getBPM()
-//{
-//    if (auto* playHead = getPlayHead())
-//    {
-//        juce::AudioPlayHead::CurrentPositionInfo positionInfo;
-//
-//        if (playHead->getPosition())
-//        {
-//            double bpm = positionInfo.bpm;
-//            DBG("Current BPM: " << bpm);
-//            // bpm bilgisini burada kullanabilirsiniz
-//        }
-//    }
-//}
-
 
 //==============================================================================
 // This creates new instances of the plugin..

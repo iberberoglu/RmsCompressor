@@ -248,18 +248,17 @@ items off here as I fix them.
 
 ### Still open
 
-- [ ] **Data race on the gain reduction value.** It's a plain `float` written from
-      the audio thread and read from the UI thread, and the RMS buffer gets
-      written from both too, which breaks the FIFO's single-producer contract.
-- [ ] **No fallback return in the ballistics filter.** With neither peak nor RMS
-      selected, `processSample` runs off the end of the function.
+- [ ] **The editor still reads from the detection FIFO.** `getRmsLevel()` pulls
+      from `rmsFifo` on the UI thread while `processBlock` pushes and pulls on
+      the audio thread. The FIFO is built for one producer and one consumer, so
+      this breaks its contract. The fix is for `processBlock` to publish the
+      levels the meter needs into atomics, and for the editor to read only
+      those.
 - [ ] **The gain reduction meter isn't calibrated.** I draw the scale marks at
       equal angular spacing, but the values they stand for aren't linear, so the
       needle disagrees with the labels everywhere except the extremes.
 - [ ] **JUCE 7 / JUCE 8 mismatch** between `modules/` and `JuceLibraryCode/`,
       which is why the build flags above exist.
-- [ ] Variable shadowing in `processBlock`, and `setSize()` called from inside
-      `resized()`.
 
 ### Fixed
 
@@ -275,6 +274,18 @@ items off here as I fix them.
       while `isBusesLayoutSupported` accepts mono buses. It now asks the
       processor how many channels are safe to query and falls back to the left
       channel.
+- [x] **Data race on the gain reduction value.** `gainReductionDb` was a plain
+      `float` written from the audio thread and read from the UI thread. It is
+      now a `std::atomic<float>`. (The FIFO half of this problem is still open,
+      above.)
+- [x] **No fallback return in the ballistics filter.** With neither peak nor RMS
+      selected, `processSample` ran off the end of the function. It now asserts
+      and returns the input unchanged.
+- [x] **Variable shadowing in `processBlock`.** A local `rmsLevels` hid the
+      member of the same name; the local is now `currentRmsLevels`.
+- [x] **`setSize()` called from inside `resized()`.** The square aspect ratio is
+      now enforced with a `ComponentBoundsConstrainer` instead of a re-entrant
+      `setSize()` call.
 - [x] **`prepareToPlay` didn't push every parameter.** Attack, release, make-up
       gain, bypass, the detection mode and both envelope coefficients only
       reached the DSP on the next parameter change, so the first blocks after
@@ -318,6 +329,8 @@ much as the technical answer.
 
 ## License
 
+**GPLv3**, see [LICENSE](LICENSE).
+
 This repository includes modified copies of JUCE 7 modules, which I use under
-JUCE's GPLv3 option (the JUCE splash screen is enabled). Any redistribution
-therefore falls under **GPLv3**.
+JUCE's GPLv3 option (the JUCE splash screen is enabled), so the project as a
+whole is distributed under the same terms.

@@ -10,7 +10,6 @@
 
 #include <JuceHeader.h>
 #include "Fifo.h"
-//#include "juce_Compressor.h"
 
 //==============================================================================
 /**
@@ -64,13 +63,9 @@ public:
 
     /** getRmsLevel() ile güvenle sorgulanabilecek kanal sayısı. */
     int getNumRmsChannels() const { return rmsCalculationBuffer.getNumChannels(); }
-    
-//    void getBPM();
-    
+
     juce::AudioProcessorValueTreeState parameters;
-    
-    //float gainReductionDb;
-    
+
     juce::dsp::Compressor<float> compressor;
     
     bool bypassValue = false;
@@ -78,13 +73,6 @@ public:
     bool rmsValue = true;
     
 private:
-    
-    std::vector<double> rmsBuffer;
-    
-    float totalInputDb = 0.0f;
-    float totalOutputDb = 0.0f;
-    float averageInputDb;
-    float averageOutputDb;
     
     void processLevelValue(juce::LinearSmoothedValue<float>&, const float value) const;
 

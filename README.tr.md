@@ -253,18 +253,16 @@ buradaki maddeleri işaretliyorum.
 
 ### Hâlâ açık
 
-- [ ] **Gain reduction değerinde veri yarışı.** Düz bir `float`; audio
-      thread'den yazılıp arayüz thread'inden okunuyor. RMS tamponuna da iki
-      yerden yazılıyor, bu da FIFO'nun tek-yazar sözleşmesini bozuyor.
-- [ ] **Balistik filtrede varsayılan dönüş değeri yok.** Ne peak ne rms
-      seçiliyken `processSample` değer döndürmeden fonksiyonun sonuna varıyor.
+- [ ] **Arayüz hâlâ algılama FIFO'sundan okuyor.** `getRmsLevel()`, arayüz
+      thread'inden `rmsFifo`'yu çekiyor; `processBlock` ise audio thread'den
+      hem yazıp hem çekiyor. FIFO tek yazar ve tek okur için tasarlandığından
+      bu sözleşmeyi bozuyor. Çözüm: `processBlock` metrenin ihtiyaç duyduğu
+      seviyeleri atomic'lere yazsın, arayüz de yalnızca onları okusun.
 - [ ] **Gain reduction metresi kalibre değil.** Ölçek işaretlerini eşit açı
       aralıklarıyla çiziyorum, ama temsil ettikleri değerler doğrusal değil;
       dolayısıyla iğne, uçlar dışında etiketlerle uyuşmuyor.
 - [ ] **`modules/` ile `JuceLibraryCode/` arasında JUCE 7 / JUCE 8
       uyumsuzluğu**; yukarıdaki derleme bayrakları bu yüzden var.
-- [ ] `processBlock` içinde isim gölgeleme ve `resized()` içinden `setSize()`
-      çağrısı.
 
 ### Düzeltilenler
 
@@ -281,6 +279,17 @@ buradaki maddeleri işaretliyorum.
       okuyordu, oysa `isBusesLayoutSupported` mono'ya izin veriyor. Artık
       processor'a kaç kanalın güvenle sorgulanabileceğini soruyor ve mono'da
       sol kanala düşüyor.
+- [x] **Gain reduction değerinde veri yarışı.** `gainReductionDb` düz bir
+      `float`'tı; audio thread'den yazılıp arayüz thread'inden okunuyordu.
+      Artık `std::atomic<float>`. (Sorunun FIFO tarafı hâlâ açık, yukarıda.)
+- [x] **Balistik filtrede varsayılan dönüş değeri yoktu.** Ne peak ne rms
+      seçiliyken `processSample` değer döndürmeden fonksiyonun sonuna
+      varıyordu. Artık assert edip girişi olduğu gibi döndürüyor.
+- [x] **`processBlock` içinde isim gölgeleme.** Yerel bir `rmsLevels`, aynı
+      adlı üyeyi gölgeliyordu; yerel değişken artık `currentRmsLevels`.
+- [x] **`resized()` içinden `setSize()` çağrısı.** Kare oran artık yeniden
+      girişli bir `setSize()` yerine `ComponentBoundsConstrainer` ile
+      zorlanıyor.
 - [x] **`prepareToPlay` bütün parametreleri aktarmıyordu.** Attack, release,
       make-up gain, bypass, algılama modu ve iki zarf katsayısı yalnızca bir
       sonraki parametre değişiminde DSP'ye ulaşıyordu; oturum yüklendikten
@@ -323,6 +332,8 @@ de aklıma gelmemişti; bu, teknik cevabın kendisi kadar değerli çıktı.
 
 ## Lisans
 
+**GPLv3**, bkz. [LICENSE](LICENSE).
+
 Bu depo, JUCE 7 modüllerinin değiştirilmiş kopyalarını içeriyor ve bunları
-JUCE'un GPLv3 seçeneği kapsamında kullanıyorum (JUCE splash screen açık).
-Dolayısıyla her türlü dağıtım **GPLv3** kapsamına giriyor.
+JUCE'un GPLv3 seçeneği kapsamında kullanıyorum (JUCE splash screen açık);
+dolayısıyla projenin tamamı aynı koşullarla dağıtılıyor.

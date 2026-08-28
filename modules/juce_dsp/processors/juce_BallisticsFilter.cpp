@@ -97,41 +97,38 @@ SampleType BallisticsFilter<SampleType>::processSample (int channel, SampleType 
     cteAT = calculateLimitedCte (static_cast<SampleType> (attackTime), expFactorAttack);
     cteRL = calculateLimitedCte (static_cast<SampleType> (releaseTime), expFactorRelease);
 
-    if(rms)
+    // RMS modu: zarf, pencerelenmiş RMS'in karesini takip eder; sonuçta karekök
+    // alınarak lineer genliğe dönülür.
+    if (rms)
     {
-//        if (levelType == LevelCalculationType::RMS)
-            rmsLevel *= rmsLevel;
-//        else
-//            rmsLevel = std::abs (rmsLevel);
-        
-        SampleType cte = (rmsLevel > yold[(size_t) channel] ? cteAT : cteRL);
-        
-        SampleType result = rmsLevel + cte * (yold[(size_t) channel] - rmsLevel);
+        rmsLevel *= rmsLevel;
+
+        const SampleType cte = (rmsLevel > yold[(size_t) channel] ? cteAT : cteRL);
+
+        const SampleType result = rmsLevel + cte * (yold[(size_t) channel] - rmsLevel);
         yold[(size_t) channel] = result;
-        
-//        if (levelType == LevelCalculationType::RMS)
-            return std::sqrt (result);
-        
-//        return result;
+
+        return std::sqrt (result);
     }
-    
-    if(peak)
+
+    // Peak modu: zarf, örneğin mutlak değerini takip eder.
+    if (peak)
     {
-//        if (levelType == LevelCalculationType::RMS)
-//            inputValue *= inputValue;
-//        else
-            inputValue = std::abs (inputValue);
-        
-        SampleType cte = (inputValue > yold[(size_t) channel] ? cteAT : cteRL);
-        
-        SampleType result = inputValue + cte * (yold[(size_t) channel] - inputValue);
+        inputValue = std::abs (inputValue);
+
+        const SampleType cte = (inputValue > yold[(size_t) channel] ? cteAT : cteRL);
+
+        const SampleType result = inputValue + cte * (yold[(size_t) channel] - inputValue);
         yold[(size_t) channel] = result;
-        
-//        if (levelType == LevelCalculationType::RMS)
-//            return std::sqrt (result);
-        
+
         return result;
     }
+
+    // Arayüzdeki radio grubu ikisinden birinin daima seçili olmasını sağlıyor;
+    // buraya düşmek bir programlama hatası demek. Değer döndürmeden çıkmak
+    // tanımsız davranış olurdu, o yüzden girişi olduğu gibi geri ver.
+    jassertfalse;
+    return inputValue;
 }
 
 template <typename SampleType>
