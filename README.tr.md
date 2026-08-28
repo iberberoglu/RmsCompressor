@@ -55,6 +55,19 @@ gösteriyor ve sıkıştırma agresif okunuyor. Uzun pencere materyalin genelini
 ortalıyor, gain reduction daha sabit kalıyor ve etki daha yumuşak, seviye
 dengeleyici bir karaktere bürünüyor.
 
+**Enable smoothing** seçeneği, bu tasarımın bir yan etkisini gideriyor. RMS blok
+başına bir kez hesaplandığı için algılayıcı sürekli bir değer değil, basamaklı
+bir dizi görüyor; basamaklar arasındaki büyük sıçramalar da zarfı olması
+gerekenden sert yapıyor. Bu seçenek, ardışık RMS değerleri arasında
+`juce::LinearSmoothedValue` ile geçiş yapıyor. Fark en net biçimde, sinyalin
+3. saniyede düşmesinden sonraki release kuyruğunda görülüyor: smoothing
+kapalıyken bir saniyeden çok kısa sürede toparlanıyor, açıkken kalan saniyenin
+tamamına yayılarak yumuşakça çıkıyor:
+
+| Smoothing kapalı | Smoothing açık |
+|---|---|
+| ![kapalı](docs/measure-rms-window-100ms.png) | ![açık](docs/measure-smoothing-on.png) |
+
 ### 2. Değiştirilebilir zarf eğrisi şekli
 
 Bu, standart JUCE'de olmayan kısım.

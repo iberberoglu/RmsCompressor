@@ -54,6 +54,18 @@ A short window tracks the signal closely, so gain reduction varies a lot and the
 compression reads as aggressive. A long window averages over the material, gain
 reduction stays steadier, and the effect is gentler and more level-riding.
 
+**Enable smoothing** addresses a side effect of this design. RMS is recomputed
+once per block, so the detector sees a staircase of discrete values rather than a
+continuous one, and large steps between them make the envelope harder than
+intended. The option interpolates between successive RMS values with
+`juce::LinearSmoothedValue`. The difference shows up most clearly in the release
+tail after the signal drops at 3 s — snapping back in well under a second
+without smoothing, easing out over the full remaining second with it:
+
+| Smoothing off | Smoothing on |
+|---|---|
+| ![off](docs/measure-rms-window-100ms.png) | ![on](docs/measure-smoothing-on.png) |
+
 ### 2. Adjustable envelope curve shape
 
 This is the part that doesn't exist in stock JUCE.
