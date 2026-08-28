@@ -15,3 +15,7 @@ Builds/VisualStudio2022/*.user
 # Okul sunumu / rapor dosyaları — depo dışında tutulur (rapor, .key, .pages, demo Live seti)
 Serbest Proje Çalışması*/
 _git_yedek_*/
+
+# Kişisel çalışma notları - depoya ve GitHub'a asla girmesin
+YAPILACAKLAR.md
+**/YAPILACAKLAR.md

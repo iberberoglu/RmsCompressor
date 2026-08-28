@@ -135,16 +135,36 @@ void RMSCompressorAudioProcessor::prepareToPlay (double sr, int samplesPerBlock)
     releaseTimeValue = static_cast<float> (parameters.getRawParameterValue("releaseTime")->load());
     ratioValue = static_cast<float> (parameters.getRawParameterValue("ratio")->load());
     makeupGainValue = static_cast<float> (parameters.getRawParameterValue("makeupGain")->load());
-    
+
+    bypassValue = parameters.getRawParameterValue("bypassButton")->load() > 0.5f;
+    peakValue = parameters.getRawParameterValue("peakButton")->load() > 0.5f;
+    rmsValue = parameters.getRawParameterValue("rmsButton")->load() > 0.5f;
+    attackCoefficientValue = static_cast<float> (parameters.getRawParameterValue("attackCoefficient")->load());
+    releaseCoefficientValue = static_cast<float> (parameters.getRawParameterValue("releaseCoefficient")->load());
+
     juce::dsp::ProcessSpec spec;
     spec.maximumBlockSize = samplesPerBlock;
     spec.numChannels = getTotalNumOutputChannels();
     spec.sampleRate = sampleRate;
-    
+
     compressor.prepare(spec);
     compressor.setThreshold(thresholdValue);
-    compressor.setRatio(ratioValue);
-    
+    compressor.setRatio(ratioFromIndex(ratioValue));
+    compressor.setAttack(attackTimeValue);
+    compressor.setRelease(releaseTimeValue);
+    compressor.setMakeupGain(makeupGainValue);
+    compressor.setBypass(bypassValue);
+
+}
+
+// "ratio" parametresi bir AudioParameterChoice; taşıdığı değer ratio'nun
+// kendisi değil, ratioValues içindeki indeksi. Doğrudan setRatio'ya
+// verilirse indeks 0 (ratio 1.0) sıfıra bölmeye yol açar.
+float RMSCompressorAudioProcessor::ratioFromIndex(float rawIndex) const
+{
+    const auto lastIndex = static_cast<int> (ratioValues.size()) - 1;
+    const auto index = juce::jlimit(0, lastIndex, static_cast<int> (rawIndex));
+    return ratioValues[static_cast<size_t> (index)];
 }
 
 void RMSCompressorAudioProcessor::releaseResources()
@@ -294,8 +314,8 @@ void RMSCompressorAudioProcessor::parameterChanged(const juce::String& parameter
         compressor.setRelease(newValue);
     }
     if (parameterID.equalsIgnoreCase("ratio")){
-        auto ratioIndex = newValue;
-        compressor.setRatio(ratioValues[ratioIndex]);
+        ratioValue = newValue;
+        compressor.setRatio(ratioFromIndex(newValue));
     }
     if (parameterID.equalsIgnoreCase("makeupGain")){
         makeupGainValue = newValue;

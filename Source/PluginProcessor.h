@@ -61,6 +61,9 @@ public:
     
     std::vector<float> getRmsLevels();
     float getRmsLevel(const int channel);
+
+    /** getRmsLevel() ile güvenle sorgulanabilecek kanal sayısı. */
+    int getNumRmsChannels() const { return rmsCalculationBuffer.getNumChannels(); }
     
 //    void getBPM();
     
@@ -84,6 +87,8 @@ private:
     float averageOutputDb;
     
     void processLevelValue(juce::LinearSmoothedValue<float>&, const float value) const;
+
+    float ratioFromIndex(float rawIndex) const;
     
     std::vector<juce::LinearSmoothedValue<float>> rmsLevels;
     Utility::Fifo rmsFifo;

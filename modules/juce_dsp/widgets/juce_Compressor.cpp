@@ -87,7 +87,7 @@ void Compressor<SampleType>::reset()
 
 //==============================================================================
 template <typename SampleType>
-SampleType Compressor<SampleType>::processSample (int channel, SampleType inputValue, std::vector<float> rmsLevels, bool peak, bool rms, double attackCoe, double releaseCoe)
+SampleType Compressor<SampleType>::processSample (int channel, SampleType inputValue, const std::vector<float>& rmsLevels, bool peak, bool rms, double attackCoe, double releaseCoe)
 {
     // Ballistics filter with peak rectifier
     auto gainRms = juce::Decibels::decibelsToGain(rmsLevels[channel]);

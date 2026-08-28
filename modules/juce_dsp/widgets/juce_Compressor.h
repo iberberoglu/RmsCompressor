@@ -63,7 +63,7 @@ public:
     //==============================================================================
     /** Processes the input and output samples supplied in the processing context. */
     template <typename ProcessContext>
-    void process (const ProcessContext& context, std::vector<float> rmsLevels, bool peak, bool rms, double attackCoef, double releaseCoef) noexcept
+    void process (const ProcessContext& context, const std::vector<float>& rmsLevels, bool peak, bool rms, double attackCoef, double releaseCoef) noexcept
     {
         const auto& inputBlock = context.getInputBlock();
         auto& outputBlock      = context.getOutputBlock();
@@ -100,7 +100,7 @@ public:
     }
 
     /** Performs the processing operation on a single sample at a time. */
-    SampleType processSample (int channel, SampleType inputValue, std::vector<float> rmsLevels, bool peak, bool rms, double attackCoef, double releaseCoef);
+    SampleType processSample (int channel, SampleType inputValue, const std::vector<float>& rmsLevels, bool peak, bool rms, double attackCoef, double releaseCoef);
     
     float gainReductionFunc()
     {

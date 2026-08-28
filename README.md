@@ -246,19 +246,8 @@ An honest list. I wrote this code while learning C++, and when I came back to it
 in August 2026 I went through it properly and found things worth fixing. I tick
 items off here as I fix them.
 
-- [ ] **Per-sample heap allocation on the audio thread.** `processSample` takes
-      `std::vector<float> rmsLevels` by value from inside the sample loop, which
-      works out to roughly 44,100 allocations a second per channel. Passing by
-      `const&` fixes it.
-- [ ] **Ratio is initialised with its index instead of its value.**
-      `prepareToPlay` hands the choice index straight to `setRatio()`. Load a
-      session saved at ratio 1.0 and it calls `setRatio(0)`, which divides by
-      zero.
-- [ ] **Out-of-bounds read on mono.** The editor reads channel 1 unconditionally,
-      but `isBusesLayoutSupported` accepts mono buses.
-- [ ] **`prepareToPlay` doesn't push every parameter.** Attack, release, make-up
-      gain and bypass only reach the DSP on the next parameter change, so the
-      first blocks after loading a session can run with stale values.
+### Still open
+
 - [ ] **Data race on the gain reduction value.** It's a plain `float` written from
       the audio thread and read from the UI thread, and the RMS buffer gets
       written from both too, which breaks the FIFO's single-producer contract.
@@ -271,6 +260,26 @@ items off here as I fix them.
       which is why the build flags above exist.
 - [ ] Variable shadowing in `processBlock`, and `setSize()` called from inside
       `resized()`.
+
+### Fixed
+
+- [x] **Per-sample heap allocation on the audio thread.** `processSample` took
+      `std::vector<float> rmsLevels` by value from inside the sample loop, which
+      worked out to roughly 44,100 allocations a second per channel. It is now
+      passed by `const&`.
+- [x] **Ratio was initialised with its index instead of its value.**
+      `prepareToPlay` handed the choice index straight to `setRatio()`, so a
+      session saved at ratio 1.0 called `setRatio(0)` and divided by zero. Both
+      call sites now go through a bounds-checked `ratioFromIndex()`.
+- [x] **Out-of-bounds read on mono.** The editor read channel 1 unconditionally
+      while `isBusesLayoutSupported` accepts mono buses. It now asks the
+      processor how many channels are safe to query and falls back to the left
+      channel.
+- [x] **`prepareToPlay` didn't push every parameter.** Attack, release, make-up
+      gain, bypass, the detection mode and both envelope coefficients only
+      reached the DSP on the next parameter change, so the first blocks after
+      loading a session could run with stale values. All of them are pushed on
+      prepare now.
 
 One thing I never fully solved: with a very short RMS window and a very short
 attack, the attack curve stops being smooth. It bothered me for a long time

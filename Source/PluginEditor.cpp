@@ -166,8 +166,10 @@ void RMSCompressorAudioProcessorEditor::timerCallback()
         maxRmsRight = -100.f;
     }
 
-    const auto leftGain = audioProcessor.getRmsLevel(0);
-    const auto rightGain = audioProcessor.getRmsLevel(1);
+    // Mono bus'a izin veriliyor; o durumda ikinci kanal yok, sol kanalı tekrarla.
+    const auto numRmsChannels = audioProcessor.getNumRmsChannels();
+    const auto leftGain = numRmsChannels > 0 ? audioProcessor.getRmsLevel(0) : -100.0f;
+    const auto rightGain = numRmsChannels > 1 ? audioProcessor.getRmsLevel(1) : leftGain;
     if (leftGain > maxRmsLeft)
         maxRmsLeft = leftGain;
     if (rightGain > maxRmsRight)

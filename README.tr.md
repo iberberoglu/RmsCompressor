@@ -251,20 +251,8 @@ Dürüst bir liste. Bu kodu C++ öğrenirken yazdım; Ağustos 2026'da geri dön
 baştan sona düzgünce inceleyince düzeltilmeye değer şeyler buldum. Düzelttikçe
 buradaki maddeleri işaretliyorum.
 
-- [ ] **Audio thread'de her sample için heap tahsisi.** `processSample`,
-      `std::vector<float> rmsLevels`'ı sample döngüsünün içinde değer olarak
-      alıyor; bu da kanal başına saniyede yaklaşık 44.100 tahsis demek.
-      `const&` ile geçirmek sorunu çözüyor.
-- [ ] **Ratio, değeri yerine indeksiyle başlatılıyor.** `prepareToPlay`, seçim
-      listesinin indeksini doğrudan `setRatio()`'ya veriyor. Ratio 1.0 ile
-      kaydedilmiş bir oturumu açtığınızda `setRatio(0)` çağrılıyor ve sıfıra
-      bölme oluyor.
-- [ ] **Mono'da sınır dışı okuma.** Arayüz koşulsuz olarak 1 numaralı kanalı
-      okuyor, ama `isBusesLayoutSupported` mono'ya izin veriyor.
-- [ ] **`prepareToPlay` bütün parametreleri aktarmıyor.** Attack, release,
-      make-up gain ve bypass yalnızca bir sonraki parametre değişiminde DSP'ye
-      ulaşıyor; oturum yüklendikten sonraki ilk bloklar eski değerlerle
-      işlenebiliyor.
+### Hâlâ açık
+
 - [ ] **Gain reduction değerinde veri yarışı.** Düz bir `float`; audio
       thread'den yazılıp arayüz thread'inden okunuyor. RMS tamponuna da iki
       yerden yazılıyor, bu da FIFO'nun tek-yazar sözleşmesini bozuyor.
@@ -277,6 +265,27 @@ buradaki maddeleri işaretliyorum.
       uyumsuzluğu**; yukarıdaki derleme bayrakları bu yüzden var.
 - [ ] `processBlock` içinde isim gölgeleme ve `resized()` içinden `setSize()`
       çağrısı.
+
+### Düzeltilenler
+
+- [x] **Audio thread'de her sample için heap tahsisi.** `processSample`,
+      `std::vector<float> rmsLevels`'ı sample döngüsünün içinde değer olarak
+      alıyordu; kanal başına saniyede yaklaşık 44.100 tahsis demekti. Artık
+      `const&` ile geçiyor.
+- [x] **Ratio, değeri yerine indeksiyle başlatılıyordu.** `prepareToPlay`,
+      seçim listesinin indeksini doğrudan `setRatio()`'ya veriyordu; ratio 1.0
+      ile kaydedilmiş bir oturum açıldığında `setRatio(0)` çağrılıyor ve sıfıra
+      bölme oluyordu. İki çağrı yeri de artık sınır denetimli
+      `ratioFromIndex()` üzerinden geçiyor.
+- [x] **Mono'da sınır dışı okuma.** Arayüz koşulsuz olarak 1 numaralı kanalı
+      okuyordu, oysa `isBusesLayoutSupported` mono'ya izin veriyor. Artık
+      processor'a kaç kanalın güvenle sorgulanabileceğini soruyor ve mono'da
+      sol kanala düşüyor.
+- [x] **`prepareToPlay` bütün parametreleri aktarmıyordu.** Attack, release,
+      make-up gain, bypass, algılama modu ve iki zarf katsayısı yalnızca bir
+      sonraki parametre değişiminde DSP'ye ulaşıyordu; oturum yüklendikten
+      sonraki ilk bloklar eski değerlerle işlenebiliyordu. Hepsi artık
+      prepare sırasında aktarılıyor.
 
 Tam olarak çözemediğim bir şey daha var: RMS penceresini çok kısa tutup attack'i
 de çok düşürdüğünüzde attack eğrisi düzgün bir eğri olmaktan çıkıyor. Uzun süre
