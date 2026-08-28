@@ -1,6 +1,6 @@
 # RMSCompressor
 
-**RMS hesaplama penceresi ve zarf eğrisinin şekli kullanıcı tarafından değiştirilebilen bir kompresör eklentisi.**
+**RMS hesaplama penceresini ve zarf eğrisinin şeklini kendiniz belirlediğiniz bir kompresör eklentisi.**
 
 `C++` · `JUCE 7.0.12` · `AU` · `VST3` · `macOS`
 
@@ -12,91 +12,96 @@
 
 ## Nedir
 
-Çoğu kompresör sana attack ve release **süresini** verir. Bu eklenti ayrıca o
-sürelerin ürettiği eğrinin **şeklini** de veriyor, ve algılayıcının karar
-vermeden önce sesin ne kadarlık bir dilimini ortalayacağını da sana bırakıyor.
+Çoğu kompresör size attack ve release **süresini** verir. Ben, o sürelerin
+ürettiği eğrinin **şeklini** de veren, üstelik algılayıcının karar vermeden önce
+sesin ne kadarlık bir dilimini ortalayacağına da sizin karar verdiğiniz bir
+kompresör istedim.
 
-Bu ikisi normalde DSP kodunun içine gömülü sabitlerdir. Burada ön panelde
-birer kontrol.
+Bu ikisi normalde DSP kodunun içine gömülü sabitlerdir. Ben ikisini de çıkarıp
+ön panele koydum.
 
-Eklenti, İstanbul Teknik Üniversitesi'nde bir lisans dersi projesi olarak
-sıfırdan C++ ve JUCE ile yazıldı (bkz. [Proje bağlamı](#proje-bağlamı)).
-Aşağıdaki iki fikri mümkün kılmak için JUCE'un iki DSP sınıfı —
-`juce::dsp::Compressor` ve `juce::dsp::BallisticsFilter` — yamalandı; yamalı
-modüller bu depoda `modules/` altında bulunuyor.
+Eklentiyi, İstanbul Teknik Üniversitesi'nde bir lisans dersi projesi olarak
+sıfırdan C++ ve JUCE ile yazdım (bkz. [Proje bağlamı](#proje-bağlamı)).
+Aşağıdaki iki fikri hayata geçirmek için JUCE'un iki DSP sınıfını —
+`juce::dsp::Compressor` ve `juce::dsp::BallisticsFilter` — yamaladım; yamalı
+modüller bu depoda `modules/` altında duruyor.
 
 ---
 
 ## İki fikir
 
-### 1. Değiştirilebilir RMS hesaplama penceresi
+### 1. Kendiniz ayarladığınız RMS hesaplama penceresi
 
-JUCE'un `AudioBuffer::getRMSLevel()` metodu, host'un sana verdiği buffer üzerinden
-ortalama alır — 128 sample, 512, 1024, DAW ne ayarlıysa o. Bu senin kontrolünde
-değil ve kullanıcı buffer boyutunu değiştirdiğinde o da değişir.
+JUCE'un `AudioBuffer::getRMSLevel()` metodu, host'un size verdiği buffer
+üzerinden ortalama alır — 128 sample, 512, 1024, DAW ne ayarlıysa o. Bu sizin
+kontrolünüzde değildir ve kullanıcı buffer boyutunu değiştirdiği anda o da
+değişir.
 
-Algılayıcıyı host'tan ayırmak için gelen sample'lar kilitsiz (lock-free) bir FIFO
-halka tamponuna yazılıyor (`Source/Fifo.h`). RMS, bu halkadan geri çekilen
-istenilen uzunlukta bir dilim üzerinden hesaplanıyor — **RMS Period** slider'ıyla
-1 ile 1500 ms arasında ayarlanıyor.
+Algılayıcıyı host'tan koparmak için gelen sample'ları kilitsiz (lock-free) bir
+FIFO halka tamponuna yazıyorum (`Source/Fifo.h`) ve RMS'i, bu halkadan geri
+çektiğim istediğim uzunlukta bir dilim üzerinden hesaplıyorum. Dilimin uzunluğunu
+**RMS Period** slider'ı belirliyor, 1 ile 1500 ms arasında.
 
 ![FIFO halka tamponu](docs/fifo-diagram.png)
 
 Pencere uzunluğu, algılayıcının "ne kadarını gördüğünü", dolayısıyla kompresörün
-ne kadar agresif hissettirdiğini değiştiriyor. PluginDoctor ile ölçüldü; aynı
-kaynak, aynı threshold, aynı ratio:
+ne kadar agresif hissettirdiğini değiştiriyor. Bunu PluginDoctor ile ölçtüm —
+aynı kaynak, aynı threshold, aynı ratio:
 
 | RMS Period = 100 ms | RMS Period = 1000 ms |
 |---|---|
 | ![100 ms](docs/measure-rms-window-100ms.png) | ![1000 ms](docs/measure-rms-window-1000ms.png) |
 
-Kısa pencere sinyali yakından takip ettiği için gain reduction çok değişkenlik
-gösteriyor ve sıkıştırma agresif okunuyor. Uzun pencere materyalin genelini
-ortalıyor, gain reduction daha sabit kalıyor ve etki daha yumuşak, seviye
-dengeleyici bir karaktere bürünüyor.
+Kısa pencere sinyali yakından takip ediyor, bu yüzden gain reduction çok
+salınıyor ve sıkıştırma agresif duyuluyor. Uzun pencere materyalin genelini
+ortalıyor, gain reduction daha sabit kalıyor ve etki yumuşayıp seviye dengeleyici
+bir karaktere dönüyor.
 
-**Enable smoothing** seçeneği, bu tasarımın bir yan etkisini gideriyor. RMS blok
-başına bir kez hesaplandığı için algılayıcı sürekli bir değer değil, basamaklı
-bir dizi görüyor; basamaklar arasındaki büyük sıçramalar da zarfı olması
-gerekenden sert yapıyor. Bu seçenek, ardışık RMS değerleri arasında
-`juce::LinearSmoothedValue` ile geçiş yapıyor. Fark en net biçimde, sinyalin
-3. saniyede düşmesinden sonraki release kuyruğunda görülüyor: smoothing
-kapalıyken bir saniyeden çok kısa sürede toparlanıyor, açıkken kalan saniyenin
-tamamına yayılarak yumuşakça çıkıyor:
+Slider'ın üst sınırını 1500 ms yaptım, çünkü kendi denemelerimde bunun ötesindeki
+pencerelerin dinamik üzerinde duyulur bir farkı kalmıyordu.
+
+**Enable smoothing** seçeneği, bu tasarımın bir yan etkisini gideriyor. RMS'i
+blok başına bir kez hesapladığım için algılayıcı sürekli bir değer değil,
+basamaklı bir dizi görüyor; basamaklar arasındaki büyük sıçramalar da zarfı
+istediğimden sert yapıyor. Seçeneği açtığınızda ardışık RMS değerleri arasında
+`juce::LinearSmoothedValue` ile geçiş yapıyorum. Fark en net biçimde, sinyalin
+3. saniyede düşmesinden sonraki release kuyruğunda görünüyor: smoothing kapalıyken
+bir saniyeden çok kısa sürede toparlanıyor, açıkken kalan saniyenin tamamına
+yayılarak yumuşakça çıkıyor:
 
 | Smoothing kapalı | Smoothing açık |
 |---|---|
 | ![kapalı](docs/measure-rms-window-100ms.png) | ![açık](docs/measure-smoothing-on.png) |
 
-### 2. Değiştirilebilir zarf eğrisi şekli
+### 2. Şeklini değiştirebildiğiniz zarf eğrisi
 
-Bu, standart JUCE'de olmayan kısım.
+Standart JUCE'de olmayan kısım bu, ve projede en sevdiğim şey.
 
-Balistik filtre tek kutuplu (one-pole) bir yumuşatıcı. Her sample'da zarfı,
-`cte` katsayısı kadar mevcut seviyeye doğru hareket ettiriyor:
+Balistik filtre tek kutuplu (one-pole) bir yumuşatıcı. Her sample'da zarfı, `cte`
+katsayısı kadar mevcut seviyeye doğru hareket ettiriyor:
 
 ```cpp
 result = level + cte * (yold - level);
 cte    = std::exp (expFactor / timeMs);
 ```
 
-Standart JUCE'de `expFactor` koda gömülü:
+Standart JUCE'de `expFactor` koda gömülüdür:
 
 ```cpp
-expFactor = -2.0 * pi * 1000.0 / sampleRate;   // -2.0 değiştirilemez
+expFactor = -2.0 * pi * 1000.0 / sampleRate;   // -2.0'a dokunamazsınız
 ```
 
-Burada attack ve release'in her biri kendi çarpanına sahip ve bu çarpan bir
-parametre olarak dışarı açılmış:
+Ben attack ve release'in her birine kendi çarpanını verdim ve ikisini de birer
+parametre olarak dışarı açtım:
 
 ```cpp
 expFactorAttack  = attackCo  * pi * 1000.0 / sampleRate;   // -5.0 … -0.01
 expFactorRelease = releaseCo * pi * 1000.0 / sampleRate;
 ```
 
-Sonuç: **aynı attack süresine ayarlanmış iki kompresör, sinyali tamamen farklı
-şekilde tutabiliyor.** Aşağıdaki iki ölçümde de Attack = 300 ms,
-RMS Period = 100 ms. Sadece katsayı farklı:
+Bunun kazandırdığı şey şu: **aynı attack süresine ayarlanmış iki kompresör,
+sinyali tamamen farklı tutabiliyor.** Aşağıdaki iki ölçümde de Attack'i 300 ms,
+RMS Period'u 100 ms yaptım. Sadece katsayı değişiyor:
 
 | Attack Coefficient = −0.1 | Attack Coefficient = −5.0 |
 |---|---|
@@ -104,7 +109,7 @@ RMS Period = 100 ms. Sadece katsayı farklı:
 
 −0.1'de zarf iki saniye sonra hâlâ oturmaya devam ediyor — gain reduction'a uzun
 ve yavaş bir yaslanma. −5.0'da ise anında iniyor ve 300 ms içinde işini bitirmiş
-oluyor. Diğer bütün ayarlar aynı.
+oluyor. Diğer bütün ayarlar aynı yerde.
 
 Aynı kontrol release için de var:
 
@@ -114,6 +119,10 @@ Aynı kontrol release için de var:
 
 Katsayı sıfıra yaklaştıkça cevap yavaşlıyor ve yumuşuyor; sıfırdan uzaklaştıkça
 hızlanıyor ve sertleşiyor.
+
+Bunu tesadüfen buldum. JUCE'un attack ve release'i en baştan nasıl hesapladığını
+anlamak için katsayılarla oynuyordum. Değiştirdiğimde ne olduğunu duyunca,
+kontrolü kullanıcıya vermek bariz seçenek hâline geldi.
 
 ---
 
@@ -145,9 +154,11 @@ DAW buffer
                      gain reduction (dB) ──▶ arayüz metresi, 24 Hz timer
 ```
 
-Gain reduction metresi, analog iğneli bir gösterge olarak çizilmiş özel bir
-`juce::Component` (`Source/GainReductionMeter.h`) — metafor bir araba hız
-göstergesi: "daha hızlı", "daha çok gain reduction" demek.
+Gain reduction metresi, özel yazdığım bir `juce::Component`
+(`Source/GainReductionMeter.h`). Başta klasik bir VU metre çiziyordum, sonra bu
+göstergelerin arabaların hız göstergesinden çok da uzak olmadığını fark ettim —
+ben de bir hız göstergesi çizdim ve "daha hızlı"yı "daha çok gain reduction"a
+denk getirdim.
 
 ---
 
@@ -168,24 +179,29 @@ göstergesi: "daha hızlı", "daha çok gain reduction" demek.
 | Bypass | açık / kapalı | kapalı |
 
 Bütün parametreler otomasyona uygun. Üst kısımda ayrıca kanal başına **Max RMS**
-(yaklaşık son 4 saniyedeki en yüksek RMS) ve **Current RMS** gösteriliyor,
-saniyede 24 kez yenileniyor.
+(yaklaşık son 4 saniyedeki en yüksek RMS) ve **Current RMS** görünüyor, saniyede
+24 kez yenileniyor.
 
-**Peak** seçiliyken RMS Period'un etkisi yok — algılayıcı doğrudan sample'ın
-genliğini okuyor.
+Make-up gain JUCE'un kompresör sınıfında yok, o yüzden onu ben yazıp çıkış
+katına ekledim.
+
+**Peak**'i seçtiğinizde RMS Period'un bir etkisi kalmıyor — algılayıcı doğrudan
+sample'ın genliğini okuyor.
+
+Eklentiyi Logic Pro, Ableton Live ve Reaper'da denedim.
 
 ---
 
 ## Derleme
 
 macOS ve Xcode gerekiyor. Proje **JUCE 7.0.12** hedefliyor ve yamalı modüller
-`modules/` içinde depoda bulunuyor — DSP'yi derlemek için ayrıca JUCE kurmana
+`modules/` içinde depoda duruyor; yani DSP'yi derlemek için ayrıca JUCE kurmanıza
 gerek yok.
 
-Tek pürüz şu: `JuceLibraryCode/` bir **JUCE 8** Projucer'ıyla üretilmiş, ama
-`modules/` JUCE 7. Bu yüzden JUCE 8'e ait iki derleme birimi hariç tutulmalı.
-Aşağıdaki komut çalıştığı doğrulanmış durumda (AU hedefi, `BUILD SUCCEEDED`,
-`auval` geçiyor):
+Bilmeniz gereken tek pürüz şu: bu depodaki `JuceLibraryCode/` bir **JUCE 8**
+Projucer'ından çıktı, `modules/` ise JUCE 7. Bu yüzden JUCE 8'e ait iki derleme
+biriminin hariç tutulması gerekiyor. Aşağıdaki komut çalışıyor — AU hedefi,
+`BUILD SUCCEEDED`, `auval` geçiyor:
 
 ```bash
 cd Builds/MacOSX
@@ -196,15 +212,14 @@ xcodebuild -project RMSCompressor.xcodeproj \
   build
 ```
 
-VST3 için hedefi `"RMSCompressor - VST3"` olarak değiştir.
+VST3 için hedefi `"RMSCompressor - VST3"` olarak değiştirin.
 
 Xcode'un eklenti kopyalama adımı, her Release derlemesinde çıktıyı
-`~/Library/Audio/Plug-Ins/Components/` altına kuruyor. Yeni sürümü görmesi için
-DAW'ı kapatıp açman gerekiyor.
+`~/Library/Audio/Plug-Ins/Components/` altına kuruyor; yeni sürümü görmesi için
+DAW'ı kapatıp açın.
 
-> Projeyi bir JUCE 7 Projucer'ıyla yeniden üretmek ya da yamaları JUCE 8'e
-> taşımak, yukarıdaki bayraklara olan ihtiyacı ortadan kaldırır. Bkz.
-> [Bilinen eksikler](#bilinen-eksikler).
+> Projeyi bir JUCE 7 Projucer'ıyla yeniden üretmek ya da yamalarımı JUCE 8'e
+> taşımak, bu bayraklara olan ihtiyacı ortadan kaldırır. Aşağıdaki listede duruyor.
 
 ---
 
@@ -215,77 +230,83 @@ DAW'ı kapatıp açman gerekiyor.
 | `Source/PluginProcessor.*` | Parametreler, RMS hesabı, sinyal akışı |
 | `Source/PluginEditor.*` | Arayüz, 24 Hz yenileme timer'ı |
 | `Source/Fifo.h` | Hesaplama penceresi için kilitsiz halka tamponu |
-| `Source/GainReductionMeter.h` | Analog tarzı özel iğneli metre |
-| `modules/juce_dsp/widgets/juce_Compressor.*` | **Yamalı** — RMS algılama yolu, make-up gain, bypass |
-| `modules/juce_dsp/processors/juce_BallisticsFilter.*` | **Yamalı** — zarf katsayıları dışarı açıldı |
-| `docs/` | Bu README'de kullanılan ekran görüntüleri ve ölçümler |
+| `Source/GainReductionMeter.h` | Özel yazdığım analog tarzı iğneli metre |
+| `modules/juce_dsp/widgets/juce_Compressor.*` | **Yamalı** — RMS algılama yolunu, make-up gain'i ve bypass'ı ekledim |
+| `modules/juce_dsp/processors/juce_BallisticsFilter.*` | **Yamalı** — zarf katsayılarını dışarı açtım |
+| `docs/` | Bu README'de kullandığım ekran görüntüleri ve ölçümler |
 
 ### Dallar
 
 | Dal | Amacı |
 |---|---|
 | `au-release` | **Varsayılan.** Çalışan hat — yamalı modüller, derleniyor ve `auval` geçiyor |
-| `main` | Arşiv. Üçüncü bir algılama modu eklemeye çalışan, yarım kalmış bir deneme; DSP tarafı kaybolduğu için derlenmiyor |
-| `arsiv-2024-nisan` | Arşiv. JUCE DSP modülleri yamalanmadan önceki, Nisan 2024 tarihli erken bir anlık görüntü |
+| `main` | Arşiv. Üçüncü bir algılama modu eklemeye çalışıp yarıda bıraktığım bir deneme; DSP tarafını kaybettim, o yüzden derlenmiyor |
+| `arsiv-2024-nisan` | Arşiv. JUCE DSP modüllerini yamalamadan önceki, Nisan 2024 tarihli erken bir anlık görüntü |
 
 ---
 
 ## Bilinen eksikler
 
-Dürüst liste. Bu kod C++ öğrenilirken yazıldı ve Ağustos 2026'da yapılan bir
-inceleme düzeltilmeye değer şeyler ortaya çıkardı. İşaretli maddeler
-düzeltilmiş olanlar; kalanlar açık.
+Dürüst bir liste. Bu kodu C++ öğrenirken yazdım; Ağustos 2026'da geri dönüp
+baştan sona düzgünce inceleyince düzeltilmeye değer şeyler buldum. Düzelttikçe
+buradaki maddeleri işaretliyorum.
 
 - [ ] **Audio thread'de her sample için heap tahsisi.** `processSample`,
       `std::vector<float> rmsLevels`'ı sample döngüsünün içinde değer olarak
-      alıyor — kanal başına saniyede yaklaşık 44.100 tahsis. Çözüm `const&`
-      ile geçirmek.
+      alıyor — kanal başına saniyede yaklaşık 44.100 tahsis. `const&` ile
+      geçirmek sorunu çözüyor.
 - [ ] **Ratio, değeri yerine indeksiyle başlatılıyor.** `prepareToPlay`, seçim
       listesinin indeksini doğrudan `setRatio()`'ya veriyor. Ratio 1.0 ile
-      kaydedilmiş bir oturum açıldığında `setRatio(0)` çağrılıyor ve sıfıra
+      kaydedilmiş bir oturumu açtığınızda `setRatio(0)` çağrılıyor ve sıfıra
       bölme oluyor.
 - [ ] **Mono'da sınır dışı okuma.** Arayüz koşulsuz olarak 1 numaralı kanalı
-      okuyor; `isBusesLayoutSupported` ise mono'ya izin veriyor.
+      okuyor, ama `isBusesLayoutSupported` mono'ya izin veriyor.
 - [ ] **`prepareToPlay` bütün parametreleri aktarmıyor.** Attack, release,
       make-up gain ve bypass yalnızca bir sonraki parametre değişiminde DSP'ye
       ulaşıyor; oturum yüklendikten sonraki ilk bloklar eski değerlerle
       işlenebiliyor.
-- [ ] **Gain reduction değerinde veri yarışı.** Düz bir `float`, audio
-      thread'den yazılıp arayüz thread'inden okunuyor; RMS tamponuna da iki
+- [ ] **Gain reduction değerinde veri yarışı.** Düz bir `float`; audio
+      thread'den yazılıp arayüz thread'inden okunuyor. RMS tamponuna da iki
       yerden yazılıyor, bu da FIFO'nun tek-yazar sözleşmesini bozuyor.
-- [ ] **Balistik filtrede varsayılan dönüş değeri yok.** Ne peak ne rms seçili
-      olduğunda `processSample` değer döndürmeden fonksiyonun sonuna varıyor.
-- [ ] **Gain reduction metresi kalibre değil.** Ölçek işaretleri eşit açı
-      aralıklarıyla çiziliyor ama temsil ettikleri değerler doğrusal değil;
+- [ ] **Balistik filtrede varsayılan dönüş değeri yok.** Ne peak ne rms
+      seçiliyken `processSample` değer döndürmeden fonksiyonun sonuna varıyor.
+- [ ] **Gain reduction metresi kalibre değil.** Ölçek işaretlerini eşit açı
+      aralıklarıyla çiziyorum, ama temsil ettikleri değerler doğrusal değil;
       dolayısıyla iğne, uçlar dışında etiketlerle uyuşmuyor.
 - [ ] **`modules/` ile `JuceLibraryCode/` arasında JUCE 7 / JUCE 8
-      uyumsuzluğu**; yukarıdaki derleme bayraklarını gerektiriyor.
-- [ ] `processBlock` içinde isim gölgeleme; `resized()` içinden `setSize()`
+      uyumsuzluğu**; yukarıdaki derleme bayrakları bu yüzden var.
+- [ ] `processBlock` içinde isim gölgeleme ve `resized()` içinden `setSize()`
       çağrısı.
+
+Tam olarak çözemediğim bir şey daha var: RMS penceresini çok kısa tutup attack'i
+de çok düşürdüğünüzde attack eğrisi düzgün bir eğri olmaktan çıkıyor. Uzun süre
+canımı sıktı, sonra bu bozulmanın kendi başına bir efekt olarak kullanılabileceğine
+karar verip öyle bıraktım.
 
 ---
 
 ## Proje bağlamı
 
-**İstanbul Teknik Üniversitesi** Müzik Teknolojileri bölümünde, 2024 bahar
-döneminde **Serbest Proje Çalışması 2** dersi için geliştirildi. Teslim tarihi
-7 Haziran 2024. Danışman: **Dr. Ozan Sarıer** — değiştirilebilir pencere fikri
-de kendisinin önerisiyle ortaya çıktı.
+Bunu **İstanbul Teknik Üniversitesi** Müzik Teknolojileri bölümünde, 2024
+baharında **Serbest Proje Çalışması 2** dersi için yaptım ve 7 Haziran 2024'te
+teslim ettim. Danışmanım **Dr. Ozan Sarıer**'di; değiştirilebilir pencere fikri
+de onun önerisinden çıktı.
 
 Döneme neredeyse hiç programlama bilgisi olmadan başladım — biraz JavaScript,
-C++ ise hiç yoktu. Kompresör ve dilin kendisi tek bir dönem içinde paralel
-olarak öğrenildi.
+C++ ise hiç yoktu. Dili öğrenmekle kompresörü yazmayı tek dönem içinde paralel
+götürdüm.
 
-Projenin tam raporu (29 sayfa, Türkçe) DSP arka planını, geliştirme sürecini,
-yol boyunca karşılaşılan problemleri ve PluginDoctor ölçümlerini kapsıyor. Bu
-depoda yer almıyor; isteyene iletilebilir.
+Ayrıca 29 sayfalık bir proje raporu yazdım: DSP arka planını, geliştirme
+sürecini, yol boyunca karşılaştığım problemleri ve PluginDoctor ölçümlerini
+kapsıyor. Bu depoda yok — isterseniz bana yazın, ileteyim.
 
 ### Teşekkür
 
-**Akash Murthy** — hiç tanımadığı birinden gelen bir e-postanın ardından bir
-saatini ayırıp Zoom görüşmesi yaptı ve FIFO halka tamponunun, RMS algılamayı
-host buffer boyutundan nasıl bağımsızlaştırabileceğini anlattı. O görüşme,
-projenin en kritik problemini çözdü.
+**Akash Murthy** — kendisine hiç tanımadan bir e-posta attım; bir saatini ayırıp
+benimle Zoom görüşmesi yaptı ve FIFO halka tamponunun, RMS algılamayı host buffer
+boyutundan nasıl bağımsızlaştırabileceğini anlattı. O görüşme projenin en kritik
+problemini açtı. Dünyanın öbür ucundaki bir ses mühendisiyle öylece konuşabileceğim
+de aklıma gelmemişti; bu, teknik cevabın kendisi kadar değerli çıktı.
 
 **Dr. Ozan Sarıer** — projenin fikri ve danışmanlığı için.
 
@@ -293,6 +314,6 @@ projenin en kritik problemini çözdü.
 
 ## Lisans
 
-Bu proje, JUCE 7 modüllerinin değiştirilmiş kopyalarını içeriyor ve bunlar
-JUCE'un GPLv3 seçeneği kapsamında kullanılıyor (JUCE splash screen açık).
+Bu depo, JUCE 7 modüllerinin değiştirilmiş kopyalarını içeriyor ve bunları
+JUCE'un GPLv3 seçeneği kapsamında kullanıyorum (JUCE splash screen açık).
 Dolayısıyla her türlü dağıtım **GPLv3** kapsamına giriyor.

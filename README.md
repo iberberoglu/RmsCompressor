@@ -1,6 +1,6 @@
 # RMSCompressor
 
-**A compressor plug-in with a user-adjustable RMS detection window and a user-adjustable envelope curve shape.**
+**A compressor plug-in where you set the RMS detection window and the shape of the envelope curve yourself.**
 
 `C++` · `JUCE 7.0.12` · `AU` · `VST3` · `macOS`
 
@@ -12,66 +12,70 @@
 
 ## What it is
 
-Most compressors give you attack and release **times**. This one also gives you
-the **shape** of the curve those times produce, and lets you decide how long a
-slice of audio the detector averages before it decides to act.
+Most compressors give you attack and release **times**. I wanted one that also
+gives you the **shape** of the curve those times produce, and lets you decide how
+long a slice of audio the detector averages before it acts.
 
-Both of those are normally fixed constants buried in the DSP code. Here they are
-front-panel controls.
+Both of those are normally fixed constants buried in the DSP code. Here I pulled
+them out onto the front panel.
 
-The plug-in was built from scratch in C++ with JUCE as an undergraduate project
-at Istanbul Technical University (see [Project context](#project-context)). Two
-JUCE DSP classes — `juce::dsp::Compressor` and `juce::dsp::BallisticsFilter` —
-were patched to make the two ideas below possible; the patched modules ship in
-this repository under `modules/`.
+I built this from scratch in C++ and JUCE as an undergraduate project at Istanbul
+Technical University (see [Project context](#project-context)). To make the two
+ideas below work I patched two JUCE DSP classes — `juce::dsp::Compressor` and
+`juce::dsp::BallisticsFilter` — and the patched modules ship in this repository
+under `modules/`.
 
 ---
 
 ## The two ideas
 
-### 1. Adjustable RMS detection window
+### 1. An RMS detection window you can set
 
 JUCE's `AudioBuffer::getRMSLevel()` averages over whatever buffer the host hands
 you — 128 samples, 512, 1024, whatever the DAW is set to. You don't control it,
-and it changes when the user changes their buffer size.
+and it changes the moment the user changes their buffer size.
 
-To decouple the detector from the host, incoming samples are pushed into a
-lock-free FIFO ring buffer (`Source/Fifo.h`). RMS is then computed over an
-arbitrary slice pulled back out of that ring — set by the **RMS Period** slider,
-1 to 1500 ms.
+To cut the detector loose from the host, I push incoming samples into a lock-free
+FIFO ring buffer (`Source/Fifo.h`) and compute RMS over an arbitrary slice pulled
+back out of that ring. The **RMS Period** slider sets how long that slice is,
+from 1 to 1500 ms.
 
 ![FIFO ring buffer](docs/fifo-diagram.png)
 
-The window length changes how much the detector "sees", and therefore how
-aggressive the compressor feels. Measured in PluginDoctor, same source, same
-threshold, same ratio:
+The window length changes how much the detector "sees", and with it how
+aggressive the compressor feels. I measured this in PluginDoctor — same source,
+same threshold, same ratio:
 
 | RMS Period = 100 ms | RMS Period = 1000 ms |
 |---|---|
 | ![100 ms](docs/measure-rms-window-100ms.png) | ![1000 ms](docs/measure-rms-window-1000ms.png) |
 
-A short window tracks the signal closely, so gain reduction varies a lot and the
+A short window tracks the signal closely, so gain reduction swings a lot and the
 compression reads as aggressive. A long window averages over the material, gain
-reduction stays steadier, and the effect is gentler and more level-riding.
+reduction stays steadier, and the effect turns gentler and more level-riding.
 
-**Enable smoothing** addresses a side effect of this design. RMS is recomputed
-once per block, so the detector sees a staircase of discrete values rather than a
-continuous one, and large steps between them make the envelope harder than
-intended. The option interpolates between successive RMS values with
+I capped the slider at 1500 ms because past that point, in my own testing, longer
+windows stopped making an audible difference to the dynamics.
+
+**Enable smoothing** deals with a side effect of this design. I recompute RMS
+once per block, so the detector sees a staircase of discrete values instead of a
+continuous one, and large steps between them make the envelope harder than I
+wanted. Turning smoothing on interpolates between successive RMS values with
 `juce::LinearSmoothedValue`. The difference shows up most clearly in the release
-tail after the signal drops at 3 s — snapping back in well under a second
-without smoothing, easing out over the full remaining second with it:
+tail after the signal drops at 3 s — it snaps back in well under a second without
+smoothing, and eases out across the full remaining second with it:
 
 | Smoothing off | Smoothing on |
 |---|---|
 | ![off](docs/measure-rms-window-100ms.png) | ![on](docs/measure-smoothing-on.png) |
 
-### 2. Adjustable envelope curve shape
+### 2. An envelope curve whose shape you can change
 
-This is the part that doesn't exist in stock JUCE.
+This is the part that doesn't exist in stock JUCE, and it's my favourite thing in
+the project.
 
-The ballistics filter is a one-pole smoother. Each sample it moves the envelope
-toward the current level by a coefficient `cte`:
+The ballistics filter is a one-pole smoother. On every sample it moves the
+envelope toward the current level by a coefficient `cte`:
 
 ```cpp
 result = level + cte * (yold - level);
@@ -81,36 +85,40 @@ cte    = std::exp (expFactor / timeMs);
 In stock JUCE, `expFactor` is hardcoded:
 
 ```cpp
-expFactor = -2.0 * pi * 1000.0 / sampleRate;   // the -2.0 is not adjustable
+expFactor = -2.0 * pi * 1000.0 / sampleRate;   // you don't get to touch the -2.0
 ```
 
-Here attack and release each get their own multiplier, exposed as a parameter:
+I gave attack and release their own multiplier and exposed each as a parameter:
 
 ```cpp
 expFactorAttack  = attackCo  * pi * 1000.0 / sampleRate;   // -5.0 … -0.01
 expFactorRelease = releaseCo * pi * 1000.0 / sampleRate;
 ```
 
-The consequence: **two compressors set to the same attack time can hold the
-signal completely differently.** Both measurements below are Attack = 300 ms,
-RMS Period = 100 ms. Only the coefficient differs:
+What this buys you: **two compressors set to the same attack time can hold the
+signal completely differently.** In both measurements below I set Attack to
+300 ms and RMS Period to 100 ms. Only the coefficient changes:
 
 | Attack Coefficient = −0.1 | Attack Coefficient = −5.0 |
 |---|---|
 | ![coef -0.1](docs/measure-attack-coef-0.1.png) | ![coef -5.0](docs/measure-attack-coef-5.0.png) |
 
 At −0.1 the envelope is still settling two seconds in — a long, slow lean into
-the gain reduction. At −5.0 it snaps down and is essentially done within
-300 ms. Same knob positions everywhere else.
+the gain reduction. At −5.0 it snaps down and is essentially finished within
+300 ms. Every other knob is in the same position.
 
-The same control exists for release:
+Release gets the same control:
 
 | Release Coefficient = −1.0 | Release Coefficient = −5.0 |
 |---|---|
 | ![coef -1.0](docs/measure-release-coef-1.0.png) | ![coef -5.0](docs/measure-release-coef-5.0.png) |
 
-Coefficients closer to zero mean a slower, softer response; further from zero
-means faster and tighter.
+Coefficients closer to zero give a slower, softer response; further from zero,
+faster and tighter.
+
+I found this by accident, while experimenting with the coefficients to understand
+how JUCE calculated attack and release in the first place. Once I heard what
+changing them did, handing the control to the user was the obvious move.
 
 ---
 
@@ -143,8 +151,9 @@ DAW buffer
 ```
 
 The gain reduction meter is a custom `juce::Component`
-(`Source/GainReductionMeter.h`) drawn as an analogue needle gauge — the
-metaphor is a car speedometer, where "faster" maps to "more gain reduction".
+(`Source/GainReductionMeter.h`). I started out drawing a conventional VU meter,
+then realised those gauges aren't far from a car's speedometer — so I drew one,
+and mapped "faster" onto "more gain reduction".
 
 ---
 
@@ -164,25 +173,30 @@ metaphor is a car speedometer, where "faster" maps to "more gain reduction".
 | Enable Smoothing | on / off | off |
 | Bypass | on / off | off |
 
-All parameters are automatable. The header also displays **Max RMS** (peak RMS
-over roughly the last 4 seconds) and **Current RMS** per channel, refreshed
+Every parameter is automatable. The header also shows **Max RMS** (the highest
+RMS over roughly the last 4 seconds) and **Current RMS** per channel, refreshed
 24 times a second.
 
-When **Peak** is selected, RMS Period has no effect — the detector reads the
+Make-up gain isn't in JUCE's compressor class, so I wrote it and added it to the
+output stage.
+
+When you pick **Peak**, RMS Period stops doing anything — the detector reads the
 sample magnitude directly.
+
+I tested the plug-in in Logic Pro, Ableton Live and Reaper.
 
 ---
 
 ## Building
 
-Requires macOS and Xcode. The project targets **JUCE 7.0.12**, and the patched
-modules are vendored in `modules/` — you do not need a separate JUCE checkout to
+You need macOS and Xcode. The project targets **JUCE 7.0.12** and the patched
+modules are vendored in `modules/`, so you don't need a separate JUCE checkout to
 build the DSP.
 
-There is one wrinkle: `JuceLibraryCode/` was generated by a **JUCE 8** Projucer,
-while `modules/` is JUCE 7. Two JUCE 8-only translation units have to be
-excluded. This command is verified working (AU target, `BUILD SUCCEEDED`,
-passes `auval`):
+There is one wrinkle to know about. `JuceLibraryCode/` in this repo came out of a
+**JUCE 8** Projucer while `modules/` is JUCE 7, so two JUCE 8-only translation
+units have to be excluded. This command works — AU target, `BUILD SUCCEEDED`,
+passes `auval`:
 
 ```bash
 cd Builds/MacOSX
@@ -195,13 +209,12 @@ xcodebuild -project RMSCompressor.xcodeproj \
 
 Swap the target for `"RMSCompressor - VST3"` to build the VST3.
 
-Xcode's plug-in copy step installs the built component to
-`~/Library/Audio/Plug-Ins/Components/` on every Release build. Restart your DAW
-to pick up the new version.
+Xcode's plug-in copy step installs the built component into
+`~/Library/Audio/Plug-Ins/Components/` on every Release build, so restart your
+DAW to pick up the new version.
 
-> Regenerating the project from a JUCE 7 Projucer, or porting the patches onto
-> JUCE 8, would remove the need for the flags above. See
-> [Known limitations](#known-limitations).
+> Regenerating the project from a JUCE 7 Projucer, or moving my patches onto
+> JUCE 8, would drop the need for those flags. It's on the list below.
 
 ---
 
@@ -213,8 +226,8 @@ to pick up the new version.
 | `Source/PluginEditor.*` | Interface, 24 Hz refresh timer |
 | `Source/Fifo.h` | Lock-free ring buffer for the detection window |
 | `Source/GainReductionMeter.h` | Custom analogue-style needle meter |
-| `modules/juce_dsp/widgets/juce_Compressor.*` | **Patched** — RMS detection path, make-up gain, bypass |
-| `modules/juce_dsp/processors/juce_BallisticsFilter.*` | **Patched** — exposed envelope coefficients |
+| `modules/juce_dsp/widgets/juce_Compressor.*` | **Patched** — I added the RMS detection path, make-up gain and bypass |
+| `modules/juce_dsp/processors/juce_BallisticsFilter.*` | **Patched** — I exposed the envelope coefficients |
 | `docs/` | Screenshots and measurements used in this README |
 
 ### Branches
@@ -222,64 +235,73 @@ to pick up the new version.
 | Branch | Purpose |
 |---|---|
 | `au-release` | **Default.** The working line — patched modules, builds and passes `auval` |
-| `main` | Archive. An abandoned experiment adding a third detection mode; its DSP half was lost, so it does not build |
-| `arsiv-2024-nisan` | Archive. An early April 2024 snapshot, before the JUCE DSP modules were patched |
+| `main` | Archive. An experiment I abandoned that added a third detection mode; I lost its DSP half, so it doesn't build |
+| `arsiv-2024-nisan` | Archive. An early April 2024 snapshot, from before I patched the JUCE DSP modules |
 
 ---
 
 ## Known limitations
 
-Honest list. This was written while learning C++, and a re-read in August 2026
-turned up things worth fixing. Checked items have been addressed; the rest are
-open.
+An honest list. I wrote this code while learning C++, and when I came back to it
+in August 2026 I went through it properly and found things worth fixing. I tick
+items off here as I fix them.
 
 - [ ] **Per-sample heap allocation on the audio thread.** `processSample` takes
-      `std::vector<float> rmsLevels` by value inside the sample loop — roughly
-      44,100 allocations per second per channel. Passing by `const&` is the fix.
-- [ ] **Ratio is initialised with its index, not its value.** `prepareToPlay`
-      passes the choice index straight to `setRatio()`. Loading a session saved
-      at ratio 1.0 calls `setRatio(0)`, which divides by zero.
-- [ ] **Out-of-bounds read on mono.** The editor unconditionally reads channel 1;
-      `isBusesLayoutSupported` accepts mono buses.
-- [ ] **`prepareToPlay` does not push every parameter.** Attack, release,
-      make-up gain and bypass only reach the DSP on the next parameter change,
-      so the first blocks after a session load can run with stale values.
-- [ ] **Data race on the gain reduction value.** A plain `float` written from the
-      audio thread and read from the UI thread; the RMS buffer is also written
-      from both, which breaks the FIFO's single-producer contract.
-- [ ] **Ballistics filter has no fallback return.** If neither peak nor RMS is
-      selected, `processSample` falls off the end of the function.
-- [ ] **Gain reduction meter is not calibrated.** Scale marks are drawn at equal
-      angular spacing while the values they represent are not linear, so the
-      needle disagrees with the labels except at the extremes.
+      `std::vector<float> rmsLevels` by value from inside the sample loop —
+      roughly 44,100 allocations a second per channel. Passing by `const&` fixes
+      it.
+- [ ] **Ratio is initialised with its index instead of its value.**
+      `prepareToPlay` hands the choice index straight to `setRatio()`. Load a
+      session saved at ratio 1.0 and it calls `setRatio(0)`, which divides by
+      zero.
+- [ ] **Out-of-bounds read on mono.** The editor reads channel 1 unconditionally,
+      but `isBusesLayoutSupported` accepts mono buses.
+- [ ] **`prepareToPlay` doesn't push every parameter.** Attack, release, make-up
+      gain and bypass only reach the DSP on the next parameter change, so the
+      first blocks after loading a session can run with stale values.
+- [ ] **Data race on the gain reduction value.** It's a plain `float` written from
+      the audio thread and read from the UI thread, and the RMS buffer gets
+      written from both too, which breaks the FIFO's single-producer contract.
+- [ ] **No fallback return in the ballistics filter.** With neither peak nor RMS
+      selected, `processSample` runs off the end of the function.
+- [ ] **The gain reduction meter isn't calibrated.** I draw the scale marks at
+      equal angular spacing, but the values they stand for aren't linear, so the
+      needle disagrees with the labels everywhere except the extremes.
 - [ ] **JUCE 7 / JUCE 8 mismatch** between `modules/` and `JuceLibraryCode/`,
-      requiring the build flags above.
-- [ ] Variable shadowing in `processBlock`; `setSize()` called from inside
+      which is why the build flags above exist.
+- [ ] Variable shadowing in `processBlock`, and `setSize()` called from inside
       `resized()`.
+
+One thing I never fully solved: with a very short RMS window and a very short
+attack, the attack curve stops being smooth. It bothered me for a long time
+before I decided the artefact is usable as an effect in its own right, and left
+it in.
 
 ---
 
 ## Project context
 
-Built for **Serbest Proje Çalışması 2** (Independent Project Study 2) at
-**Istanbul Technical University**, Department of Music Technology, spring 2024.
-Submitted 7 June 2024. Advisor: **Dr. Ozan Sarıer**, whose suggestion the
-adjustable-window idea originally came from.
+I built this for **Serbest Proje Çalışması 2** (Independent Project Study 2) at
+**Istanbul Technical University**, Department of Music Technology, in the spring
+of 2024, and submitted it on 7 June 2024. My advisor was **Dr. Ozan Sarıer**, and
+the adjustable-window idea came out of his suggestion.
 
-I started the term with essentially no programming experience — some JavaScript,
-no C++ at all. The compressor and the language were learned in parallel over one
-semester.
+I started that term with essentially no programming experience — a little
+JavaScript, no C++ at all. I learned the language and built the compressor in
+parallel over a single semester.
 
-The full project report (29 pages, in Turkish) covers the DSP background, the
-development process, the problems hit along the way and the PluginDoctor
-measurements. It is not in this repository; ask if you'd like a copy.
+I also wrote a full project report (29 pages, in Turkish) covering the DSP
+background, the development process, the problems I ran into and the PluginDoctor
+measurements. It isn't in this repository — ask me if you'd like a copy.
 
 ### Acknowledgements
 
-**Akash Murthy** — after an email out of the blue, he gave up an hour of his time
-for a Zoom call and explained how a FIFO ring buffer could decouple RMS
+**Akash Murthy** — I emailed him out of the blue, and he gave up an hour of his
+time for a Zoom call and explained how a FIFO ring buffer could decouple RMS
 detection from the host buffer size. That conversation unblocked the central
-problem of the project.
+problem of the project. It also hadn't occurred to me that I could just talk to
+an audio engineer on the other side of the world, which turned out to be worth as
+much as the technical answer.
 
 **Dr. Ozan Sarıer** — for the original idea and for supervising the work.
 
@@ -287,6 +309,6 @@ problem of the project.
 
 ## License
 
-This project embeds modified copies of JUCE 7 modules, used under JUCE's GPLv3
-option (the JUCE splash screen is enabled). Any redistribution therefore falls
-under **GPLv3**.
+This repository includes modified copies of JUCE 7 modules, which I use under
+JUCE's GPLv3 option (the JUCE splash screen is enabled). Any redistribution
+therefore falls under **GPLv3**.
